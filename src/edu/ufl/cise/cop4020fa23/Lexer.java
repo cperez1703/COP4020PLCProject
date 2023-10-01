@@ -277,6 +277,7 @@ public class Lexer implements ILexer {
 						while(input.charAt(pos) != '\n'){
 							pos++;
 							col++;
+							if(pos>=input.length())break;//added after turn in
 							if ((int)input.charAt(pos-1) > 126 || (int)input.charAt(pos-1) < 32) throw new LexicalException("Invalid Character");
 						}
 						col = 0;
