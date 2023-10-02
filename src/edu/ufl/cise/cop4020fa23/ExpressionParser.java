@@ -108,51 +108,45 @@ public class ExpressionParser implements IParser {
 //			throw new UnsupportedOperationException("THE PARSER HAS NOT BEEN IMPLEMENTED YET");
 //		}
 //	}
-//	private Expr LogicalOrExpr() throws PLCCompilerException {
-//		IToken firstToken = t;
-//		if (firstToken.kind() == ) {
-//			//Conditional Statement
-//
-//		}
-//		else if (firstToken.kind() == ) {
-//			//LogicalOrExpr
-//
-//
-//		}
-//		else {
-//			throw new UnsupportedOperationException("THE PARSER HAS NOT BEEN IMPLEMENTED YET");
-//		}
-//	}
-//	private Expr LogicalAndExpr() throws PLCCompilerException {
-//		IToken firstToken = t;
-//		if (firstToken.kind() == ) {
-//			//Conditional Statement
-//
-//		}
-//		else if (firstToken.kind() == ) {
-//			//LogicalOrExpr
-//
-//
-//		}
-//		else {
-//			throw new UnsupportedOperationException("THE PARSER HAS NOT BEEN IMPLEMENTED YET");
-//		}
-//	}
-//	private Expr ComparisonExpr() throws PLCCompilerException {
-//		IToken firstToken = t;
-//		if (firstToken.kind() == ) {
-//			//Conditional Statement
-//
-//		}
-//		else if (firstToken.kind() == ) {
-//			//LogicalOrExpr
-//
-//
-//		}
-//		else {
-//			throw new UnsupportedOperationException("THE PARSER HAS NOT BEEN IMPLEMENTED YET");
-//		}
-//	}
+	private Expr LogicalOrExpr() throws PLCCompilerException {
+		IToken firstToken = t;
+		Expr left = null;
+		Expr right = null;
+		left = expr();
+		while(isKind(OR,BITOR)){
+			IToken op = t;
+			consume();
+			right = expr();
+			left = new BinaryExpr(firstToken,left,op,right);
+		}
+		return left;
+	}
+	private Expr LogicalAndExpr() throws PLCCompilerException {
+		IToken firstToken = t;
+		Expr left = null;
+		Expr right = null;
+		left = expr();
+		while(isKind(AND,BITAND)){
+			IToken op = t;
+			consume();
+			right = expr();
+			left = new BinaryExpr(firstToken,left,op,right);
+		}
+		return left;
+	}
+	private Expr ComparisonExpr() throws PLCCompilerException {
+		IToken firstToken = t;
+		Expr left = null;
+		Expr right = null;
+		left = expr();
+		while(isKind(LT,GT,EQ,LE,GE)){
+			IToken op = t;
+			consume();
+			right = expr();
+			left = new BinaryExpr(firstToken,left,op,right);
+		}
+		return left;
+	}
 	private Expr PowExpr() throws PLCCompilerException {
 		IToken firstToken = t;
 		Expr left = null;
