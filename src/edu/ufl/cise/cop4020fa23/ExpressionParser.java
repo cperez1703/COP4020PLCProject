@@ -18,7 +18,7 @@ import static edu.ufl.cise.cop4020fa23.Kind.*;
 
 /**
 Expr::=  ConditionalExpr | LogicalOrExpr    
-ConditionalExpr ::=  ?  Expr  :  Expr  :  Expr 
+ConditionalExpr ::=  ?  Expr  :  Expr  :  Expr
 LogicalOrExpr ::= LogicalAndExpr (    (   |   |   ||   ) LogicalAndExpr)*
 LogicalAndExpr ::=  ComparisonExpr ( (   &   |  &&   )  ComparisonExpr)*
 ComparisonExpr ::= PowExpr ( (< | > | == | <= | >=) PowExpr)*
@@ -203,7 +203,7 @@ public class ExpressionParser implements IParser {
 		Expr e = null;
 		IToken op = null;
 		op = firstToken;
-		e = expr();
+		e = expr();//
 		return new UnaryExpr(firstToken,op,e);
 	}
 	private Expr PostFixExpr() throws PLCCompilerException {
