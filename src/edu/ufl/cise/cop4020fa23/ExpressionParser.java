@@ -58,13 +58,16 @@ public class ExpressionParser implements IParser {
 	}
 
 	//Parsing 4 lecture, match, kind codes
-	private void match(IToken token) throws SyntaxException, LexicalException {
-		if (token == t){
-			t = lexer.next();
+	private void match(Kind token) throws SyntaxException, LexicalException {
+		if (token == t.kind()){
+			consume();
 		}
 		else {
-			throw new SyntaxException("Expected token: " + t.kind() + "Actual token: " + token.kind());
+			throw new SyntaxException("Expected token: " + t.kind() + "Actual token: " + token);
 		}
+	}
+	private void consume() throws LexicalException {
+		t = lexer.next();
 	}
 	protected boolean isKind(Kind kind) {
 		return t.kind() == kind;
@@ -79,18 +82,16 @@ public class ExpressionParser implements IParser {
 	}
 	private Expr expr() throws PLCCompilerException {
 		IToken firstToken = t;
-		if (firstToken.kind() == ) {
-			//Conditional Statement
-
-		}
-		else if (firstToken.kind() == ) {
-			//LogicalOrExpr
-
-
-		}
-		else {
-			throw new UnsupportedOperationException("THE PARSER HAS NOT BEEN IMPLEMENTED YET");
-		}
+		return PrimaryExpr();
+//		if (firstToken.kind() == ) {
+//			//Conditional expr()
+//		}
+//		else if (firstToken.kind() == ) {
+//			//LogicalOrExpr
+//		}
+//		else {
+//			throw new UnsupportedOperationException("THE PARSER HAS NOT BEEN IMPLEMENTED YET");
+//		}
 	}
 //	private Expr ConditionalExpr() throws PLCCompilerException {
 //		IToken firstToken = t;
@@ -229,43 +230,50 @@ public class ExpressionParser implements IParser {
 //	}
 	private Expr PrimaryExpr() throws PLCCompilerException {
 		IToken firstToken = t;
+		Expr e = null;
 		if (isKind(STRING_LIT, NUM_LIT, BOOLEAN_LIT, IDENT, CONST)) {
 			if (t.kind() == STRING_LIT) {
-				return new StringLitExpr(t);
+				e = new StringLitExpr(t);
+				match(STRING_LIT);
 			}
 			else if (t.kind() == NUM_LIT) {
-				return new NumLitExpr(t);
+				e = new NumLitExpr(t);
+				match(NUM_LIT);
 			}
 			else if (t.kind() == BOOLEAN_LIT) {
-				return new BooleanLitExpr(t);
+				e = new BooleanLitExpr(t);
+				match(BOOLEAN_LIT);
 			}
 			else if(t.kind() == IDENT) {
-				return new IdentExpr(t);
+				e = new IdentExpr(t);
+				match(IDENT);
 			}
 			else if (t.kind() == CONST) {
-				return new ConstExpr(t);
+				e = new ConstExpr(t);
+				match(CONST);
 			}
-			match(t);
 		}
 
 		else if (isKind(LPAREN)) {
-			match(t);
+			match(LPAREN);
 			expr();
-			match(t);
+			e = expr();
+			match(RPAREN);
 		}
 		else if (isKind(LSQUARE)) {
-			match(t);
-			expr();
-			match(t);
-			expr();
-			match(t);
-			expr();
-			match(t);
+			match(LSQUARE);
+			Expr red = expr();
+			match(COMMA);
+			Expr grn = expr();
+			match(COMMA);
+			Expr Blue();
+			match(RSQUARE);
+			e = new ExpandedPixelExpr();
 		}
 		else {
 			throw new UnsupportedOperationException("Expected kind: " + firstToken.kind() + "Actual Kind: " +t.kind());
 		}
-        return null;
+		return e;
     }
 //	private Expr ChannelSelector() throws PLCCompilerException {
 //		IToken firstToken = t;
