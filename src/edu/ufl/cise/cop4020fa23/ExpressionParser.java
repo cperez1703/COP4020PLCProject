@@ -82,7 +82,8 @@ public class ExpressionParser implements IParser {
 	}
 	private Expr expr() throws PLCCompilerException {
 		IToken firstToken = t;
-		return PrimaryExpr();
+//		return PrimaryExpr();
+		return PostFixExpr();
 //		if (firstToken.kind() == ) {
 //			//Conditional expr()
 //		}
@@ -213,21 +214,19 @@ public class ExpressionParser implements IParser {
 //			throw new UnsupportedOperationException("THE PARSER HAS NOT BEEN IMPLEMENTED YET");
 //		}
 //	}
-//	private Expr PostFixExpr() throws PLCCompilerException {
-//		IToken firstToken = t;
-//		if (firstToken.kind() == ) {
-//			//Conditional Statement
-//
-//		}
-//		else if (firstToken.kind() == ) {
-//			//LogicalOrExpr
-//
-//
-//		}
-//		else {
-//			throw new UnsupportedOperationException("THE PARSER HAS NOT BEEN IMPLEMENTED YET");
-//		}
-//	}
+	private Expr PostFixExpr() throws PLCCompilerException {
+		IToken firstToken = t;
+		Expr primary = PrimaryExpr();
+		PixelSelector pixel = null;
+		ChannelSelector channel = null;
+		if (isKind(LSQUARE)) {
+			pixel = PixelSelector();
+		}
+		if (isKind(COLON)) {
+			channel = ChannelSelector();
+		}
+		return new PostfixExpr(firstToken,primary,pixel,channel);
+	}
 	private Expr PrimaryExpr() throws PLCCompilerException {
 		IToken firstToken = t;
 		Expr e = null;
@@ -266,45 +265,38 @@ public class ExpressionParser implements IParser {
 			match(COMMA);
 			Expr grn = expr();
 			match(COMMA);
-			Expr Blue();
+//			Expr Blue();
 			match(RSQUARE);
-			e = new ExpandedPixelExpr();
+//			e = new ExpandedPixelExpr();
 		}
 		else {
 			throw new UnsupportedOperationException("Expected kind: " + firstToken.kind() + "Actual Kind: " +t.kind());
 		}
 		return e;
     }
-//	private Expr ChannelSelector() throws PLCCompilerException {
-//		IToken firstToken = t;
-//		if (firstToken.kind() == ) {
-//			//Conditional Statement
-//
-//		}
-//		else if (firstToken.kind() == ) {
-//			//LogicalOrExpr
-//
-//
-//		}
-//		else {
-//			throw new UnsupportedOperationException("THE PARSER HAS NOT BEEN IMPLEMENTED YET");
-//		}
-//	}
-//	private Expr PixelSelector() throws PLCCompilerException {
-//		IToken firstToken = t;
-//		if (firstToken.kind() == ) {
-//			//Conditional Statement
-//
-//		}
-//		else if (firstToken.kind() == ) {
-//			//LogicalOrExpr
-//
-//
-//		}
-//		else {
-//			throw new UnsupportedOperationException("THE PARSER HAS NOT BEEN IMPLEMENTED YET");
-//		}
-//	}
+	private ChannelSelector ChannelSelector() throws PLCCompilerException {
+		IToken firstToken = t;
+		IToken color = null;
+		match(COLON);
+		if(isKind(RES_red)){
+			color = t;
+			match(RES_red);
+		}else if(isKind(RES_blue)){
+			color = t;
+			match(RES_blue);
+		}else if(isKind(RES_green)){
+			color = t;
+			match(RES_green);
+		}
+		return new ChannelSelector(firstToken,color);
+	}
+	private PixelSelector PixelSelector() throws PLCCompilerException {
+		IToken firstToken = t;
+		Expr x = null;
+		Expr y = null;
+
+		return null;
+	}
 //	private Expr ExpandedPixelExpr() throws PLCCompilerException {
 //		IToken firstToken = t;
 //		if (firstToken.kind() == ) {
