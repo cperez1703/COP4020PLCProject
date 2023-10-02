@@ -1,11 +1,11 @@
 /*Copyright 2023 by Beverly A Sanders
- * 
- * This code is provided for solely for use of students in COP4020 Programming Language Concepts at the 
- * University of Florida during the fall semester 2023 as part of the course project.  
- * 
- * No other use is authorized. 
- * 
- * This code may not be posted on a public web site either during or after the course.  
+ *
+ * This code is provided for solely for use of students in COP4020 Programming Language Concepts at the
+ * University of Florida during the fall semester 2023 as part of the course project.
+ *
+ * No other use is authorized.
+ *
+ * This code may not be posted on a public web site either during or after the course.
  */
 package edu.ufl.cise.cop4020fa23;
 
@@ -17,7 +17,7 @@ import edu.ufl.cise.cop4020fa23.exceptions.SyntaxException;
 import static edu.ufl.cise.cop4020fa23.Kind.*;
 
 /**
-Expr::=  ConditionalExpr | LogicalOrExpr    
+Expr::=  ConditionalExpr | LogicalOrExpr
 ConditionalExpr ::=  ?  Expr  :  Expr  :  Expr
 LogicalOrExpr ::= LogicalAndExpr (    (   |   |   ||   ) LogicalAndExpr)*
 LogicalAndExpr ::=  ComparisonExpr ( (   &   |  &&   )  ComparisonExpr)*
@@ -27,12 +27,12 @@ AdditiveExpr ::= MultiplicativeExpr ( ( + | -  ) MultiplicativeExpr )*
 MultiplicativeExpr ::= UnaryExpr (( * |  /  |  % ) UnaryExpr)*
 UnaryExpr ::=  ( ! | - | length | width) UnaryExpr  |  UnaryExprPostfix
 UnaryExprPostfix::= PrimaryExpr (PixelSelector | ε ) (ChannelSelector | ε )
-PrimaryExpr ::=STRING_LIT | NUM_LIT |  IDENT | ( Expr ) | Z 
-    ExpandedPixel  
+PrimaryExpr ::=STRING_LIT | NUM_LIT |  IDENT | ( Expr ) | Z
+    ExpandedPixel
 ChannelSelector ::= : red | : green | : blue
 PixelSelector  ::= [ Expr , Expr ]
 ExpandedPixel ::= [ Expr , Expr , Expr ]
-Dimension  ::=  [ Expr , Expr ]                         
+Dimension  ::=  [ Expr , Expr ]
 
  */
 
@@ -86,7 +86,7 @@ public class ExpressionParser implements IParser {
 		if (isKind(QUESTION)) {
 			e = ConditionalExpr();
 		}
-		else if (isKind(STRING_LIT, NUM_LIT, BOOLEAN_LIT, IDENT, CONST,LPAREN,LSQUARE)) {
+		else if (isKind(STRING_LIT, NUM_LIT, BOOLEAN_LIT, IDENT, CONST,LPAREN,LSQUARE,BANG,MINUS,RES_width,RES_height)) {
 			e = LogicalOrExpr();
 		}
 		else {
@@ -191,6 +191,7 @@ public class ExpressionParser implements IParser {
 		IToken op = null;
 		if(isKind(BANG,MINUS,RES_width,RES_height)){
 			op = firstToken;
+			consume();
 			e = expr();
 			return new UnaryExpr(firstToken,op,e);
 		}else{
@@ -205,6 +206,9 @@ public class ExpressionParser implements IParser {
 		ChannelSelector channel = null;
 		if (isKind(LSQUARE)) {
 			pixel = PixelSelector();
+			if(isKind(COLON)){
+				channel = ChannelSelector();
+			}
 			return new PostfixExpr(firstToken,primary,pixel,channel);
 		}
 		else if (isKind(COLON)) {
@@ -242,7 +246,6 @@ public class ExpressionParser implements IParser {
 
 		else if (isKind(LPAREN)) {
 			match(LPAREN);
-			expr();
 			e = expr();
 			match(RPAREN);
 		}
@@ -285,6 +288,7 @@ public class ExpressionParser implements IParser {
 		x = expr();
 		match(COMMA);
 		y = expr();
+		match(RSQUARE);
 		return new PixelSelector(firstToken,x,y);
 	}
 //	private Expr ExpandedPixelExpr() throws PLCCompilerException {
