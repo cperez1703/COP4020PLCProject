@@ -259,7 +259,7 @@ public class ExpressionParser implements IParser {
 			match(COMMA);
 			Expr blu = expr();
 			match(RSQUARE);
-			e = new ExpandedPixelExpr(firstToken,red,grn,blu);
+			e = new ExpandedPixelExpr(firstToken,red,grn,blu);//may need function
 		}
 		else {
 			throw new UnsupportedOperationException("Expected kind: " + firstToken.kind() + "Actual Kind: " +t.kind());
@@ -292,20 +292,4 @@ public class ExpressionParser implements IParser {
 		y = expr();
 		return new PixelSelector(firstToken,x,y);
 	}
-//	private Expr ExpandedPixelExpr() throws PLCCompilerException {
-//		IToken firstToken = t;
-//		if (firstToken.kind() == ) {
-//			//Conditional Statement
-//
-//		}
-//		else if (firstToken.kind() == ) {
-//			//LogicalOrExpr
-//
-//
-//		}
-//		else {
-//			throw new UnsupportedOperationException("THE PARSER HAS NOT BEEN IMPLEMENTED YET");
-//		}
-//	}
-
 }
