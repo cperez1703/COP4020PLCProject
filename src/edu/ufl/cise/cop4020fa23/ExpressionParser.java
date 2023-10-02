@@ -82,7 +82,6 @@ public class ExpressionParser implements IParser {
 	}
 	private Expr expr() throws PLCCompilerException {
 		IToken firstToken = t;
-//		return PrimaryExpr();
 		return PostFixExpr();
 //		if (firstToken.kind() == ) {
 //			//Conditional expr()
@@ -199,21 +198,14 @@ public class ExpressionParser implements IParser {
 //			throw new UnsupportedOperationException("THE PARSER HAS NOT BEEN IMPLEMENTED YET");
 //		}
 //	}
-//	private Expr UnaryExpr() throws PLCCompilerException {
-//		IToken firstToken = t;
-//		if (firstToken.kind() == ) {
-//			//Conditional Statement
-//
-//		}
-//		else if (firstToken.kind() == ) {
-//			//LogicalOrExpr
-//
-//
-//		}
-//		else {
-//			throw new UnsupportedOperationException("THE PARSER HAS NOT BEEN IMPLEMENTED YET");
-//		}
-//	}
+	private Expr UnaryExpr() throws PLCCompilerException {
+		IToken firstToken = t;
+		Expr e = null;
+		IToken op = null;
+		op = firstToken;
+		e = expr();
+		return new UnaryExpr(firstToken,op,e);
+	}
 	private Expr PostFixExpr() throws PLCCompilerException {
 		IToken firstToken = t;
 		Expr primary = PrimaryExpr();
@@ -265,9 +257,9 @@ public class ExpressionParser implements IParser {
 			match(COMMA);
 			Expr grn = expr();
 			match(COMMA);
-//			Expr Blue();
+			Expr blu = expr();
 			match(RSQUARE);
-//			e = new ExpandedPixelExpr();
+			e = new ExpandedPixelExpr(firstToken,red,grn,blu);
 		}
 		else {
 			throw new UnsupportedOperationException("Expected kind: " + firstToken.kind() + "Actual Kind: " +t.kind());
@@ -292,10 +284,13 @@ public class ExpressionParser implements IParser {
 	}
 	private PixelSelector PixelSelector() throws PLCCompilerException {
 		IToken firstToken = t;
+		match(LSQUARE);
 		Expr x = null;
 		Expr y = null;
-
-		return null;
+		x = expr();
+		match(COMMA);
+		y = expr();
+		return new PixelSelector(firstToken,x,y);
 	}
 //	private Expr ExpandedPixelExpr() throws PLCCompilerException {
 //		IToken firstToken = t;
