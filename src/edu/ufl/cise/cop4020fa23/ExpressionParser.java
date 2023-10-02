@@ -207,7 +207,6 @@ public class ExpressionParser implements IParser {
 		return new PostfixExpr(firstToken,primary,pixel,channel);
 	}
 	private Expr PrimaryExpr() throws PLCCompilerException {
-		System.out.println("ih");
 		IToken firstToken = t;
 		Expr e = null;
 		if (isKind(STRING_LIT, NUM_LIT, BOOLEAN_LIT, IDENT, CONST)) {
