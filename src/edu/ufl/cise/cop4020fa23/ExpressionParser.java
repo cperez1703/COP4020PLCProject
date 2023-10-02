@@ -93,21 +93,19 @@ public class ExpressionParser implements IParser {
 //			throw new UnsupportedOperationException("THE PARSER HAS NOT BEEN IMPLEMENTED YET");
 //		}
 	}
-//	private Expr ConditionalExpr() throws PLCCompilerException {
-//		IToken firstToken = t;
-//		if (firstToken.kind() == ) {
-//			//Conditional Statement
-//
-//		}
-//		else if (firstToken.kind() == ) {
-//			//LogicalOrExpr
-//
-//
-//		}
-//		else {
-//			throw new UnsupportedOperationException("THE PARSER HAS NOT BEEN IMPLEMENTED YET");
-//		}
-//	}
+	private Expr ConditionalExpr() throws PLCCompilerException {
+		IToken firstToken = t;
+		Expr guard = null;
+		Expr trueExpr = null;
+		Expr falseExpr = null;
+		match(QUESTION);
+		guard = expr();
+		match(RARROW);
+		trueExpr = expr();
+		match(COMMA);
+		falseExpr = expr();
+		return new ConditionalExpr(firstToken, guard, trueExpr, falseExpr);
+	}
 	private Expr LogicalOrExpr() throws PLCCompilerException {
 		IToken firstToken = t;
 		Expr left = null;
