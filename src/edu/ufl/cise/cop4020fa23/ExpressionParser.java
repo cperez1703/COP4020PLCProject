@@ -82,16 +82,17 @@ public class ExpressionParser implements IParser {
 	}
 	private Expr expr() throws PLCCompilerException {
 		IToken firstToken = t;
-		return PostFixExpr();
-//		if (firstToken.kind() == ) {
-//			//Conditional expr()
-//		}
-//		else if (firstToken.kind() == ) {
-//			//LogicalOrExpr
-//		}
-//		else {
-//			throw new UnsupportedOperationException("THE PARSER HAS NOT BEEN IMPLEMENTED YET");
-//		}
+		Expr e = null;
+		if (isKind(QUESTION)) {
+			e = ConditionalExpr();
+		}
+		else if (isKind(STRING_LIT, NUM_LIT, BOOLEAN_LIT, IDENT, CONST,LPAREN,LSQUARE)) {
+			e = LogicalOrExpr();
+		}
+		else {
+			throw new UnsupportedOperationException("THE PARSER HAS NOT BEEN IMPLEMENTED YET");
+		}
+		return e;
 	}
 	private Expr ConditionalExpr() throws PLCCompilerException {
 		IToken firstToken = t;
@@ -114,7 +115,7 @@ public class ExpressionParser implements IParser {
 		while(isKind(OR,BITOR)){
 			IToken op = t;
 			consume();
-			right = expr();
+			right = LogicalAndExpr();
 			left = new BinaryExpr(firstToken,left,op,right);
 		}
 		return left;
@@ -127,7 +128,7 @@ public class ExpressionParser implements IParser {
 		while(isKind(AND,BITAND)){
 			IToken op = t;
 			consume();
-			right = expr();
+			right = ComparisonExpr();
 			left = new BinaryExpr(firstToken,left,op,right);
 		}
 		return left;
@@ -140,7 +141,7 @@ public class ExpressionParser implements IParser {
 		while(isKind(LT,GT,EQ,LE,GE)){
 			IToken op = t;
 			consume();
-			right = expr();
+			right = PowExpr();
 			left = new BinaryExpr(firstToken,left,op,right);
 		}
 		return left;
@@ -153,7 +154,7 @@ public class ExpressionParser implements IParser {
 		while(isKind(EXP)){
 			IToken op = t;
 			consume();
-			right = expr();
+			right = AdditiveExpr();
 			left = new BinaryExpr(firstToken,left,op,right);
 		}
 		return left;
@@ -166,7 +167,7 @@ public class ExpressionParser implements IParser {
 		while(isKind(PLUS) || isKind(MINUS)) {
 			IToken op = t;
 			consume();
-			right = expr();
+			right = MultiplicativeExpr();
 			left = new BinaryExpr(firstToken, left, op, right);
 		}
 		return left;
@@ -179,7 +180,7 @@ public class ExpressionParser implements IParser {
 		while(isKind(TIMES)||isKind(DIV)||isKind(MOD)){
 			IToken op = t;
 			consume();
-			right = expr();
+			right = UnaryExpr();
 			left = new BinaryExpr(firstToken, left ,op ,right);
 		}
 		return left;//
@@ -206,6 +207,7 @@ public class ExpressionParser implements IParser {
 		return new PostfixExpr(firstToken,primary,pixel,channel);
 	}
 	private Expr PrimaryExpr() throws PLCCompilerException {
+		System.out.println("ih");
 		IToken firstToken = t;
 		Expr e = null;
 		if (isKind(STRING_LIT, NUM_LIT, BOOLEAN_LIT, IDENT, CONST)) {
