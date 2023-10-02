@@ -90,8 +90,7 @@ public class ExpressionParser implements IParser {
 			e = LogicalOrExpr();
 		}
 		else {
-			//Sonny
-			throw new UnsupportedOperationException("THE PARSER HAS NOT BEEN IMPLEMENTED YET");
+			throw new SyntaxException("Invalid Parser Expression");
 		}
 		return e;
 	}
@@ -261,7 +260,7 @@ public class ExpressionParser implements IParser {
 			e = new ExpandedPixelExpr(firstToken,red,grn,blu);
 		}
 		else {
-			throw new UnsupportedOperationException("Expected kind: " + firstToken.kind() + " Actual Kind: " +t.kind());
+			throw new SyntaxException("Expected kind: " + firstToken.kind() + " Actual Kind: " +t.kind());
 		}
 		return e;
     }
