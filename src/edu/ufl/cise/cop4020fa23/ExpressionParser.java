@@ -183,21 +183,19 @@ public class ExpressionParser implements IParser {
 //			throw new UnsupportedOperationException("THE PARSER HAS NOT BEEN IMPLEMENTED YET");
 //		}
 //	}
-//	private Expr MultiplicativeExpr() throws PLCCompilerException {
-//		IToken firstToken = t;
-//		if (firstToken.kind() == ) {
-//			//Conditional Statement
-//
-//		}
-//		else if (firstToken.kind() == ) {
-//			//LogicalOrExpr
-//
-//
-//		}
-//		else {
-//			throw new UnsupportedOperationException("THE PARSER HAS NOT BEEN IMPLEMENTED YET");
-//		}
-//	}
+	private Expr MultiplicativeExpr() throws PLCCompilerException {
+		IToken firstToken = t;
+		Expr left = null;
+		Expr right = null;
+		left = expr();
+		while(isKind(TIMES)||isKind(DIV)||isKind(MOD)){
+			IToken op = t;
+			consume();
+			right = expr();
+			left = new BinaryExpr(firstToken, left ,op ,right);
+		}
+		return left;
+	}
 	private Expr UnaryExpr() throws PLCCompilerException {
 		IToken firstToken = t;
 		Expr e = null;
