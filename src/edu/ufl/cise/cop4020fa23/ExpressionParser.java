@@ -194,7 +194,7 @@ public class ExpressionParser implements IParser {
 			right = expr();
 			left = new BinaryExpr(firstToken, left ,op ,right);
 		}
-		return left;
+		return left;//
 	}
 	private Expr UnaryExpr() throws PLCCompilerException {
 		IToken firstToken = t;
