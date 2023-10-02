@@ -9,60 +9,13 @@
  */
 package edu.ufl.cise.cop4020fa23;
 
-import static edu.ufl.cise.cop4020fa23.Kind.AND;
-import static edu.ufl.cise.cop4020fa23.Kind.BANG;
-import static edu.ufl.cise.cop4020fa23.Kind.BITAND;
-import static edu.ufl.cise.cop4020fa23.Kind.BITOR;
-import static edu.ufl.cise.cop4020fa23.Kind.COLON;
-import static edu.ufl.cise.cop4020fa23.Kind.COMMA;
-import static edu.ufl.cise.cop4020fa23.Kind.DIV;
-import static edu.ufl.cise.cop4020fa23.Kind.EOF;
-import static edu.ufl.cise.cop4020fa23.Kind.EQ;
-import static edu.ufl.cise.cop4020fa23.Kind.EXP;
-import static edu.ufl.cise.cop4020fa23.Kind.GE;
-import static edu.ufl.cise.cop4020fa23.Kind.GT;
-import static edu.ufl.cise.cop4020fa23.Kind.IDENT;
-import static edu.ufl.cise.cop4020fa23.Kind.LE;
-import static edu.ufl.cise.cop4020fa23.Kind.LPAREN;
-import static edu.ufl.cise.cop4020fa23.Kind.LSQUARE;
-import static edu.ufl.cise.cop4020fa23.Kind.LT;
-import static edu.ufl.cise.cop4020fa23.Kind.MINUS;
-import static edu.ufl.cise.cop4020fa23.Kind.MOD;
-import static edu.ufl.cise.cop4020fa23.Kind.NUM_LIT;
-import static edu.ufl.cise.cop4020fa23.Kind.OR;
-import static edu.ufl.cise.cop4020fa23.Kind.PLUS;
-import static edu.ufl.cise.cop4020fa23.Kind.QUESTION;
-import static edu.ufl.cise.cop4020fa23.Kind.RARROW;
-import static edu.ufl.cise.cop4020fa23.Kind.RES_blue;
-import static edu.ufl.cise.cop4020fa23.Kind.RES_green;
-import static edu.ufl.cise.cop4020fa23.Kind.RES_height;
-import static edu.ufl.cise.cop4020fa23.Kind.RES_red;
-import static edu.ufl.cise.cop4020fa23.Kind.RES_width;
-import static edu.ufl.cise.cop4020fa23.Kind.RPAREN;
-import static edu.ufl.cise.cop4020fa23.Kind.RSQUARE;
-import static edu.ufl.cise.cop4020fa23.Kind.STRING_LIT;
-import static edu.ufl.cise.cop4020fa23.Kind.TIMES;
-import static edu.ufl.cise.cop4020fa23.Kind.CONST;
-
-import java.util.Arrays;
-
-import edu.ufl.cise.cop4020fa23.ast.AST;
-import edu.ufl.cise.cop4020fa23.ast.BinaryExpr;
-import edu.ufl.cise.cop4020fa23.ast.BooleanLitExpr;
-import edu.ufl.cise.cop4020fa23.ast.ChannelSelector;
-import edu.ufl.cise.cop4020fa23.ast.ConditionalExpr;
-import edu.ufl.cise.cop4020fa23.ast.ConstExpr;
-import edu.ufl.cise.cop4020fa23.ast.ExpandedPixelExpr;
-import edu.ufl.cise.cop4020fa23.ast.Expr;
-import edu.ufl.cise.cop4020fa23.ast.IdentExpr;
-import edu.ufl.cise.cop4020fa23.ast.NumLitExpr;
-import edu.ufl.cise.cop4020fa23.ast.PixelSelector;
-import edu.ufl.cise.cop4020fa23.ast.PostfixExpr;
-import edu.ufl.cise.cop4020fa23.ast.StringLitExpr;
-import edu.ufl.cise.cop4020fa23.ast.UnaryExpr;
+import edu.ufl.cise.cop4020fa23.ast.*;
 import edu.ufl.cise.cop4020fa23.exceptions.LexicalException;
 import edu.ufl.cise.cop4020fa23.exceptions.PLCCompilerException;
 import edu.ufl.cise.cop4020fa23.exceptions.SyntaxException;
+
+import static edu.ufl.cise.cop4020fa23.Kind.*;
+
 /**
 Expr::=  ConditionalExpr | LogicalOrExpr    
 ConditionalExpr ::=  ?  Expr  :  Expr  :  Expr 
@@ -84,14 +37,12 @@ Dimension  ::=  [ Expr , Expr ]
  */
 
 public class ExpressionParser implements IParser {
-	
 	final ILexer lexer;
 	private IToken t;
-	
 
 	/**
 	 * @param lexer
-	 * @throws LexicalException 
+	 * @throws LexicalException
 	 */
 	public ExpressionParser(ILexer lexer) throws LexicalException {
 		super();
@@ -106,12 +57,260 @@ public class ExpressionParser implements IParser {
 		return e;
 	}
 
-
+	//Parsing 4 lecture, match, kind codes
+	private void match(IToken token) throws SyntaxException, LexicalException {
+		if (token == t){
+			t = lexer.next();
+		}
+		else {
+			throw new SyntaxException("Expected token: " + t.kind() + "Actual token: " + token.kind());
+		}
+	}
+	protected boolean isKind(Kind kind) {
+		return t.kind() == kind;
+	}
+	protected boolean isKind(Kind... kinds) {
+		for (Kind k: kinds) {
+			if (k == t.kind()) {
+				return true;
+			}
+		}
+		return false;
+	}
 	private Expr expr() throws PLCCompilerException {
 		IToken firstToken = t;
-		throw new UnsupportedOperationException("THE PARSER HAS NOT BEEN IMPLEMENTED YET");
-	}
+		if (firstToken.kind() == ) {
+			//Conditional Statement
 
-    
+		}
+		else if (firstToken.kind() == ) {
+			//LogicalOrExpr
+
+
+		}
+		else {
+			throw new UnsupportedOperationException("THE PARSER HAS NOT BEEN IMPLEMENTED YET");
+		}
+	}
+//	private Expr ConditionalExpr() throws PLCCompilerException {
+//		IToken firstToken = t;
+//		if (firstToken.kind() == ) {
+//			//Conditional Statement
+//
+//		}
+//		else if (firstToken.kind() == ) {
+//			//LogicalOrExpr
+//
+//
+//		}
+//		else {
+//			throw new UnsupportedOperationException("THE PARSER HAS NOT BEEN IMPLEMENTED YET");
+//		}
+//	}
+//	private Expr LogicalOrExpr() throws PLCCompilerException {
+//		IToken firstToken = t;
+//		if (firstToken.kind() == ) {
+//			//Conditional Statement
+//
+//		}
+//		else if (firstToken.kind() == ) {
+//			//LogicalOrExpr
+//
+//
+//		}
+//		else {
+//			throw new UnsupportedOperationException("THE PARSER HAS NOT BEEN IMPLEMENTED YET");
+//		}
+//	}
+//	private Expr LogicalAndExpr() throws PLCCompilerException {
+//		IToken firstToken = t;
+//		if (firstToken.kind() == ) {
+//			//Conditional Statement
+//
+//		}
+//		else if (firstToken.kind() == ) {
+//			//LogicalOrExpr
+//
+//
+//		}
+//		else {
+//			throw new UnsupportedOperationException("THE PARSER HAS NOT BEEN IMPLEMENTED YET");
+//		}
+//	}
+//	private Expr ComparisonExpr() throws PLCCompilerException {
+//		IToken firstToken = t;
+//		if (firstToken.kind() == ) {
+//			//Conditional Statement
+//
+//		}
+//		else if (firstToken.kind() == ) {
+//			//LogicalOrExpr
+//
+//
+//		}
+//		else {
+//			throw new UnsupportedOperationException("THE PARSER HAS NOT BEEN IMPLEMENTED YET");
+//		}
+//	}
+//	private Expr PowExpr() throws PLCCompilerException {
+//		IToken firstToken = t;
+//		if (firstToken.kind() == ) {
+//			//Conditional Statement
+//
+//		}
+//		else if (firstToken.kind() == ) {
+//			//LogicalOrExpr
+//
+//
+//		}
+//		else {
+//			throw new UnsupportedOperationException("THE PARSER HAS NOT BEEN IMPLEMENTED YET");
+//		}
+//	}
+//	private Expr AdditiveExpr() throws PLCCompilerException {
+//		IToken firstToken = t;
+//		if (firstToken.kind() == ) {
+//			//Conditional Statement
+//
+//		}
+//		else if (firstToken.kind() == ) {
+//			//LogicalOrExpr
+//
+//
+//		}
+//		else {
+//			throw new UnsupportedOperationException("THE PARSER HAS NOT BEEN IMPLEMENTED YET");
+//		}
+//	}
+//	private Expr MultiplicativeExpr() throws PLCCompilerException {
+//		IToken firstToken = t;
+//		if (firstToken.kind() == ) {
+//			//Conditional Statement
+//
+//		}
+//		else if (firstToken.kind() == ) {
+//			//LogicalOrExpr
+//
+//
+//		}
+//		else {
+//			throw new UnsupportedOperationException("THE PARSER HAS NOT BEEN IMPLEMENTED YET");
+//		}
+//	}
+//	private Expr UnaryExpr() throws PLCCompilerException {
+//		IToken firstToken = t;
+//		if (firstToken.kind() == ) {
+//			//Conditional Statement
+//
+//		}
+//		else if (firstToken.kind() == ) {
+//			//LogicalOrExpr
+//
+//
+//		}
+//		else {
+//			throw new UnsupportedOperationException("THE PARSER HAS NOT BEEN IMPLEMENTED YET");
+//		}
+//	}
+//	private Expr PostFixExpr() throws PLCCompilerException {
+//		IToken firstToken = t;
+//		if (firstToken.kind() == ) {
+//			//Conditional Statement
+//
+//		}
+//		else if (firstToken.kind() == ) {
+//			//LogicalOrExpr
+//
+//
+//		}
+//		else {
+//			throw new UnsupportedOperationException("THE PARSER HAS NOT BEEN IMPLEMENTED YET");
+//		}
+//	}
+	private Expr PrimaryExpr() throws PLCCompilerException {
+		IToken firstToken = t;
+		if (isKind(STRING_LIT, NUM_LIT, BOOLEAN_LIT, IDENT, CONST)) {
+			if (t.kind() == STRING_LIT) {
+				return new StringLitExpr(t);
+			}
+			else if (t.kind() == NUM_LIT) {
+				return new NumLitExpr(t);
+			}
+			else if (t.kind() == BOOLEAN_LIT) {
+				return new BooleanLitExpr(t);
+			}
+			else if(t.kind() == IDENT) {
+				return new IdentExpr(t);
+			}
+			else if (t.kind() == CONST) {
+				return new ConstExpr(t);
+			}
+			match(t);
+		}
+
+		else if (isKind(LPAREN)) {
+			match(t);
+			expr();
+			match(t);
+		}
+		else if (isKind(LSQUARE)) {
+			match(t);
+			expr();
+			match(t);
+			expr();
+			match(t);
+			expr();
+			match(t);
+		}
+		else {
+			throw new UnsupportedOperationException("Expected kind: " + firstToken.kind() + "Actual Kind: " +t.kind());
+		}
+        return null;
+    }
+//	private Expr ChannelSelector() throws PLCCompilerException {
+//		IToken firstToken = t;
+//		if (firstToken.kind() == ) {
+//			//Conditional Statement
+//
+//		}
+//		else if (firstToken.kind() == ) {
+//			//LogicalOrExpr
+//
+//
+//		}
+//		else {
+//			throw new UnsupportedOperationException("THE PARSER HAS NOT BEEN IMPLEMENTED YET");
+//		}
+//	}
+//	private Expr PixelSelector() throws PLCCompilerException {
+//		IToken firstToken = t;
+//		if (firstToken.kind() == ) {
+//			//Conditional Statement
+//
+//		}
+//		else if (firstToken.kind() == ) {
+//			//LogicalOrExpr
+//
+//
+//		}
+//		else {
+//			throw new UnsupportedOperationException("THE PARSER HAS NOT BEEN IMPLEMENTED YET");
+//		}
+//	}
+//	private Expr ExpandedPixelExpr() throws PLCCompilerException {
+//		IToken firstToken = t;
+//		if (firstToken.kind() == ) {
+//			//Conditional Statement
+//
+//		}
+//		else if (firstToken.kind() == ) {
+//			//LogicalOrExpr
+//
+//
+//		}
+//		else {
+//			throw new UnsupportedOperationException("THE PARSER HAS NOT BEEN IMPLEMENTED YET");
+//		}
+//	}
 
 }
