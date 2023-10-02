@@ -63,7 +63,7 @@ public class ExpressionParser implements IParser {
 			consume();
 		}
 		else {
-			throw new SyntaxException("Expected token: " + t.kind() + "Actual token: " + token);
+			throw new SyntaxException("Expected token: " + t.kind() + " Actual token: " + token);
 		}
 	}
 	private void consume() throws LexicalException {
@@ -99,11 +99,11 @@ public class ExpressionParser implements IParser {
 		Expr guard = null;
 		Expr trueExpr = null;
 		Expr falseExpr = null;
-		match(QUESTION);
+		match(Kind.QUESTION);
 		guard = expr();
-		match(RARROW);
+		match(Kind.RARROW);
 		trueExpr = expr();
-		match(COMMA);
+		match(Kind.COMMA);
 		falseExpr = expr();
 		return new ConditionalExpr(firstToken, guard, trueExpr, falseExpr);
 	}
@@ -111,7 +111,7 @@ public class ExpressionParser implements IParser {
 		IToken firstToken = t;
 		Expr left = null;
 		Expr right = null;
-		left = expr();
+		left = LogicalAndExpr();
 		while(isKind(OR,BITOR)){
 			IToken op = t;
 			consume();
@@ -124,7 +124,7 @@ public class ExpressionParser implements IParser {
 		IToken firstToken = t;
 		Expr left = null;
 		Expr right = null;
-		left = expr();
+		left = ComparisonExpr();
 		while(isKind(AND,BITAND)){
 			IToken op = t;
 			consume();
@@ -137,7 +137,7 @@ public class ExpressionParser implements IParser {
 		IToken firstToken = t;
 		Expr left = null;
 		Expr right = null;
-		left = expr();
+		left = PowExpr();
 		while(isKind(LT,GT,EQ,LE,GE)){
 			IToken op = t;
 			consume();
@@ -150,7 +150,7 @@ public class ExpressionParser implements IParser {
 		IToken firstToken = t;
 		Expr left = null;
 		Expr right = null;
-		left = expr();
+		left = AdditiveExpr();
 		while(isKind(EXP)){
 			IToken op = t;
 			consume();
@@ -163,7 +163,7 @@ public class ExpressionParser implements IParser {
 		IToken firstToken = t;
 		Expr left = null;
 		Expr right = null;
-		left = expr();
+		left = MultiplicativeExpr();
 		while(isKind(PLUS) || isKind(MINUS)) {
 			IToken op = t;
 			consume();
@@ -176,7 +176,7 @@ public class ExpressionParser implements IParser {
 		IToken firstToken = t;
 		Expr left = null;
 		Expr right = null;
-		left = expr();
+		left = UnaryExpr();
 		while(isKind(TIMES)||isKind(DIV)||isKind(MOD)){
 			IToken op = t;
 			consume();
@@ -189,9 +189,14 @@ public class ExpressionParser implements IParser {
 		IToken firstToken = t;
 		Expr e = null;
 		IToken op = null;
-		op = firstToken;
-		e = expr();//
-		return new UnaryExpr(firstToken,op,e);
+		if(isKind(BANG,MINUS,RES_width,RES_height)){
+			op = firstToken;
+			e = expr();
+			return new UnaryExpr(firstToken,op,e);
+		}else{
+			e = PostFixExpr();
+		}
+		return e;
 	}
 	private Expr PostFixExpr() throws PLCCompilerException {
 		IToken firstToken = t;
@@ -200,11 +205,14 @@ public class ExpressionParser implements IParser {
 		ChannelSelector channel = null;
 		if (isKind(LSQUARE)) {
 			pixel = PixelSelector();
+			return new PostfixExpr(firstToken,primary,pixel,channel);
 		}
-		if (isKind(COLON)) {
+		else if (isKind(COLON)) {
 			channel = ChannelSelector();
+			return new PostfixExpr(firstToken,primary,pixel,channel);
+		}else{
+			return primary;
 		}
-		return new PostfixExpr(firstToken,primary,pixel,channel);
 	}
 	private Expr PrimaryExpr() throws PLCCompilerException {
 		IToken firstToken = t;
@@ -249,7 +257,7 @@ public class ExpressionParser implements IParser {
 			e = new ExpandedPixelExpr(firstToken,red,grn,blu);
 		}
 		else {
-			throw new UnsupportedOperationException("Expected kind: " + firstToken.kind() + "Actual Kind: " +t.kind());
+			throw new UnsupportedOperationException("Expected kind: " + firstToken.kind() + " Actual Kind: " +t.kind());
 		}
 		return e;
     }
