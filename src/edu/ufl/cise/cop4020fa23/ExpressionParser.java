@@ -154,7 +154,7 @@ public class ExpressionParser implements IParser {
 		while(isKind(EXP)){
 			IToken op = t;
 			consume();
-			right = AdditiveExpr();
+			right = PowExpr();
 			left = new BinaryExpr(firstToken,left,op,right);
 		}
 		return left;
@@ -277,6 +277,8 @@ public class ExpressionParser implements IParser {
 		}else if(isKind(RES_green)){
 			color = t;
 			match(RES_green);
+		}else{
+			throw new SyntaxException("No given color for ChannelSelector");
 		}
 		return new ChannelSelector(firstToken,color);
 	}
