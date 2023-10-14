@@ -28,6 +28,7 @@ public class Parser implements IParser {
 	public Parser(ILexer lexer) throws LexicalException {
 		super();
 		this.lexer = lexer;
+		t = lexer.next();
 	}
 
 
