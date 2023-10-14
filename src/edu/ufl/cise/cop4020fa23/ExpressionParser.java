@@ -293,20 +293,4 @@ public class ExpressionParser implements IParser {
 		match(RSQUARE);
 		return new PixelSelector(firstToken,x,y);
 	}
-//	private Expr ExpandedPixelExpr() throws PLCCompilerException {
-//		IToken firstToken = t;
-//		if (firstToken.kind() == ) {
-//			//Conditional Statement
-//
-//		}
-//		else if (firstToken.kind() == ) {
-//			//LogicalOrExpr
-//
-//
-//		}
-//		else {
-//			throw new UnsupportedOperationException("THE PARSER HAS NOT BEEN IMPLEMENTED YET");
-//		}
-//	}
-
 }
