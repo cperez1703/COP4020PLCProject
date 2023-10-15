@@ -67,10 +67,6 @@ public class Parser implements IParser {
 		return false;
 	}
 
-	private Program Program() throws PLCCompilerException {
-		throw new PLCCompilerException("Not Implemented!");
-	}
-
 	private Block Block() throws PLCCompilerException{
 		throw new PLCCompilerException("Not Implemented!");
 	}
