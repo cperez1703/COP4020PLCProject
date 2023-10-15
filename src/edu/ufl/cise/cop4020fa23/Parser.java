@@ -66,6 +66,30 @@ public class Parser implements IParser {
 		}
 		return false;
 	}
+
+	private Program Program() throws PLCCompilerException {
+		throw new PLCCompilerException("Not Implemented!");
+	}
+
+	private Block Block() throws PLCCompilerException{
+		throw new PLCCompilerException("Not Implemented!");
+	}
+
+	private NameDef ParamList() throws PLCCompilerException{
+		throw new PLCCompilerException("Not Implemented!");
+	}
+
+	private NameDef NameDef() throws PLCCompilerException{
+		throw new PLCCompilerException("Not Implemented!");
+	}
+
+	private Kind Type() throws PLCCompilerException{
+		throw new PLCCompilerException("Not Implemented!");
+	}
+
+	private Declaration Declaration() throws PLCCompilerException{
+		throw new PLCCompilerException("Not Implemented!");
+	}
 	private Expr expr() throws PLCCompilerException {
 		IToken firstToken = t;
 		Expr e = null;
@@ -279,31 +303,6 @@ public class Parser implements IParser {
 		match(RSQUARE);
 		return new PixelSelector(firstToken,x,y);
 	}
-
-	private Program Program() throws PLCCompilerException {
-		throw new PLCCompilerException("Not Implemented!");
-	}
-
-	private Block Block() throws PLCCompilerException{
-		throw new PLCCompilerException("Not Implemented!");
-	}
-
-	private NameDef ParamList() throws PLCCompilerException{
-		throw new PLCCompilerException("Not Implemented!");
-	}
-
-	private NameDef NameDef() throws PLCCompilerException{
-		throw new PLCCompilerException("Not Implemented!");
-	}
-
-	private Kind Type() throws PLCCompilerException{
-		throw new PLCCompilerException("Not Implemented!");
-	}
-
-	private Declaration Declaration() throws PLCCompilerException{
-		throw new PLCCompilerException("Not Implemented!");
-	}
-
 
 	private LValue LValue() throws PLCCompilerException{
 		throw new PLCCompilerException("Not implemented");
