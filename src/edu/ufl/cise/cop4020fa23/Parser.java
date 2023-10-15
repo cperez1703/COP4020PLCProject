@@ -53,7 +53,7 @@ public class Parser implements IParser {
 			match(LPAREN);
 			params = ParamList();
 			match(RPAREN);
-			block = Block();
+			block = Block();//
 		}else{
 			throw new UnsupportedOperationException();
 		}
