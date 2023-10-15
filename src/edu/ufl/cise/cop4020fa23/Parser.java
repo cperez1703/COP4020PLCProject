@@ -14,6 +14,8 @@ import edu.ufl.cise.cop4020fa23.exceptions.LexicalException;
 import edu.ufl.cise.cop4020fa23.exceptions.PLCCompilerException;
 import edu.ufl.cise.cop4020fa23.exceptions.SyntaxException;
 
+import javax.swing.plaf.nimbus.State;
+
 import static edu.ufl.cise.cop4020fa23.Kind.*;
 
 import java.util.ArrayList;
@@ -278,6 +280,44 @@ public class Parser implements IParser {
 		return new PixelSelector(firstToken,x,y);
 	}
 
+	private Program Program() throws PLCCompilerException {
+		throw new PLCCompilerException("Not Implemented!");
+	}
+
+	private Block Block() throws PLCCompilerException{
+		throw new PLCCompilerException("Not Implemented!");
+	}
+
+	private NameDef ParamList() throws PLCCompilerException{
+		throw new PLCCompilerException("Not Implemented!");
+	}
+
+	private NameDef NameDef() throws PLCCompilerException{
+		throw new PLCCompilerException("Not Implemented!");
+	}
+
+	private Kind Type() throws PLCCompilerException{
+		throw new PLCCompilerException("Not Implemented!");
+	}
+
+	private Declaration Declaration() throws PLCCompilerException{
+		throw new PLCCompilerException("Not Implemented!");
+	}
 
 
+	private LValue LValue() throws PLCCompilerException{
+		throw new PLCCompilerException("Not implemented");
+	}
+
+	private Statement Statement() throws PLCCompilerException{
+		throw new PLCCompilerException("Not Implemented!");
+	}
+
+	private GuardedBlock GuardedBlock() throws PLCCompilerException{
+		throw new PLCCompilerException("Not Implemented!");
+	}
+
+	private Block BlockStatement() throws PLCCompilerException {
+		throw new PLCCompilerException("Not Implemented!");
+	}
 }
