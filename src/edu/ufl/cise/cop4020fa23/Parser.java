@@ -41,7 +41,23 @@ public class Parser implements IParser {
 	}
 
 	private AST program() throws PLCCompilerException {
-		throw new UnsupportedOperationException();
+		IToken firstToken = t;
+		IToken type = null;
+		IToken name = null;
+		List<NameDef> params = new ArrayList<NameDef>();
+		Block block = null;
+		if(isKind(RES_image,RES_pixel,RES_int,RES_string,RES_void,RES_boolean)){
+			type = Type();
+			name = t;
+			match(IDENT);
+			match(LPAREN);
+			params = ParamList();
+			match(RPAREN);
+			block = Block();
+		}else{
+			throw new UnsupportedOperationException();
+		}
+		return new Program(firstToken, type, name, params,block);
 	}
 
 	private void match(Kind token) throws SyntaxException, LexicalException {
@@ -71,7 +87,7 @@ public class Parser implements IParser {
 		throw new PLCCompilerException("Not Implemented!");
 	}
 
-	private NameDef ParamList() throws PLCCompilerException{
+	private List<NameDef> ParamList() throws PLCCompilerException{
 		throw new PLCCompilerException("Not Implemented!");
 	}
 
@@ -79,7 +95,7 @@ public class Parser implements IParser {
 		throw new PLCCompilerException("Not Implemented!");
 	}
 
-	private Kind Type() throws PLCCompilerException{
+	private IToken Type() throws PLCCompilerException{
 		throw new PLCCompilerException("Not Implemented!");
 	}
 
