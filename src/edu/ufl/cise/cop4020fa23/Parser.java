@@ -53,7 +53,7 @@ public class Parser implements IParser {
 			match(LPAREN);
 			params = ParamList();
 			match(RPAREN);
-			block = Block();//
+			block = Block();
 		}else{
 			throw new UnsupportedOperationException();
 		}
@@ -314,6 +314,10 @@ public class Parser implements IParser {
 		y = expr();
 		match(RSQUARE);
 		return new PixelSelector(firstToken,x,y);
+	}
+
+	private Dimension Dimension() throws PLCCompilerException{
+		return null;
 	}
 
 	private LValue LValue() throws PLCCompilerException{
