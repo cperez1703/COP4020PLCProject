@@ -57,6 +57,9 @@ public class Parser implements IParser {
 		}else{
 			throw new UnsupportedOperationException();
 		}
+		if(!isKind(EOF)){
+			throw new SyntaxException("Trailing Elements");
+		}
 		return new Program(firstToken, type, name, params,block);
 	}
 
@@ -84,23 +87,66 @@ public class Parser implements IParser {
 	}
 
 	private Block Block() throws PLCCompilerException{
-		throw new PLCCompilerException("Not Implemented!");
+		IToken firstToken = t;
+		match(BLOCK_OPEN);
+		List<Block.BlockElem> elems = new ArrayList<>();
+		while(!isKind(BLOCK_CLOSE)){
+			if(isKind(RES_image,RES_pixel,RES_int,RES_string,RES_void,RES_boolean)){
+				elems.add(Declaration());
+			}else if(isKind(IDENT,RES_write,RES_do,RES_if,RETURN,BLOCK_OPEN)){
+				elems.add(Statement());
+			}
+			match(SEMI);
+		}
+		match(BLOCK_CLOSE);
+		return new Block(firstToken, elems);
 	}
 
 	private List<NameDef> ParamList() throws PLCCompilerException{
-		throw new PLCCompilerException("Not Implemented!");
+		List<NameDef> params = new ArrayList<>();
+		while(isKind(RES_image,RES_pixel,RES_int,RES_string,RES_void,RES_boolean)){
+			params.add(NameDef());
+			if(isKind(COMMA)) match(COMMA);
+		}
+		return params;
 	}
 
 	private NameDef NameDef() throws PLCCompilerException{
-		throw new PLCCompilerException("Not Implemented!");
+		IToken firstToken = t;
+		Dimension dimension = null;
+		IToken typeToken = Type();
+		if(isKind(LSQUARE)){
+			dimension = Dimension();
+		}
+		IToken identToken = t;
+		match(IDENT);
+		return new NameDef(firstToken,typeToken,dimension,identToken);
 	}
 
 	private IToken Type() throws PLCCompilerException{
-		throw new PLCCompilerException("Not Implemented!");
+		if(isKind(RES_image,RES_pixel,RES_int,RES_string,RES_void,RES_boolean)){
+			IToken token = t;
+			consume();
+			return token;
+		}else{
+			throw new SyntaxException("Invalid Type");
+		}
 	}
 
 	private Declaration Declaration() throws PLCCompilerException{
-		throw new PLCCompilerException("Not Implemented!");
+		IToken firstToken = t;
+		NameDef nameDef = null;
+		Expr initializer = null;
+		if(isKind(RES_image,RES_pixel,RES_int,RES_string,RES_void,RES_boolean)){
+			nameDef = NameDef();
+			if(isKind(ASSIGN)){
+				match(ASSIGN);
+				initializer = expr();
+			}
+			return new Declaration(firstToken,nameDef,initializer);
+		}else{
+			throw new SyntaxException("Invalid Declaration");
+		}
 	}
 	private Expr expr() throws PLCCompilerException {
 		IToken firstToken = t;
