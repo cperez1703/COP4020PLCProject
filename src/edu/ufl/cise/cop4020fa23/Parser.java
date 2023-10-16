@@ -390,8 +390,11 @@ public class Parser implements IParser {
 				channelSelector = ChannelSelector();
 				return new LValue(firstToken, name, pixelSelector, channelSelector);
 			}
+			return new LValue(firstToken, name, pixelSelector, channelSelector);
 		}
-		throw new SyntaxException("Some LValue implementation/input error!");
+		else {
+			throw new SyntaxException("Some LValue implementation/input error!");
+		}
 	}
 
 	private Statement Statement() throws PLCCompilerException{
@@ -400,7 +403,7 @@ public class Parser implements IParser {
 		Expr Expr = null;
 		if (isKind(IDENT)) {
 			LValue = LValue();
-			match(EQ);
+			match(ASSIGN);
 			Expr = expr();
 			return new AssignmentStatement(firstToken, LValue, Expr);
 		}
