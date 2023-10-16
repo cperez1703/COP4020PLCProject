@@ -14,12 +14,9 @@ import edu.ufl.cise.cop4020fa23.exceptions.LexicalException;
 import edu.ufl.cise.cop4020fa23.exceptions.PLCCompilerException;
 import edu.ufl.cise.cop4020fa23.exceptions.SyntaxException;
 
-import javax.swing.plaf.nimbus.State;
-
 import static edu.ufl.cise.cop4020fa23.Kind.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class Parser implements IParser {
@@ -60,7 +57,7 @@ public class Parser implements IParser {
 		if(!isKind(EOF)){
 			throw new SyntaxException("Trailing Elements");
 		}
-		return new Program(firstToken, type, name, params,block);
+		return new Program(firstToken, type, name, params, block);
 	}
 
 	private void match(Kind token) throws SyntaxException, LexicalException {
@@ -363,22 +360,103 @@ public class Parser implements IParser {
 	}
 
 	private Dimension Dimension() throws PLCCompilerException{
-		return null;
+		IToken firstToken = t;
+		match(LSQUARE);
+		Expr x = null;
+		x = expr();
+		match(COMMA);
+		Expr y = null;
+		y = expr();
+		match(RSQUARE);
+		return new Dimension(firstToken, x, y);
 	}
 
 	private LValue LValue() throws PLCCompilerException{
-		throw new PLCCompilerException("Not implemented");
+		IToken firstToken = t;
+		IToken name = null;
+		PixelSelector pixelSelector = null;
+		ChannelSelector channelSelector = null;
+		if (isKind(IDENT)) {
+			name = t;
+			match(IDENT);
+			if (isKind(LSQUARE)) {
+				pixelSelector = PixelSelector();
+				if (isKind(COLON)) {
+					channelSelector = ChannelSelector();
+				}
+				return new LValue(firstToken, name, pixelSelector, channelSelector);
+			}
+			else if (isKind(COLON)) {
+				channelSelector = ChannelSelector();
+				return new LValue(firstToken, name, pixelSelector, channelSelector);
+			}
+		}
+		throw new SyntaxException("Some LValue implementation/input error!");
 	}
 
 	private Statement Statement() throws PLCCompilerException{
-		throw new PLCCompilerException("Not Implemented!");
+		IToken firstToken = t;
+		LValue LValue = null;
+		Expr Expr = null;
+		if (isKind(IDENT)) {
+			LValue = LValue();
+			match(EQ);
+			Expr = expr();
+			return new AssignmentStatement(firstToken, LValue, Expr);
+		}
+		else if (isKind(RES_write)) {
+			match(RES_write);
+			Expr = expr();
+			return new WriteStatement(firstToken, Expr);
+		}
+		else if (isKind(RES_do)) {
+			List<GuardedBlock> guardedBlocks = new ArrayList<GuardedBlock>();
+			match(RES_do);
+			GuardedBlock guardedBlock = GuardedBlock();
+			guardedBlocks.add(guardedBlock);
+			while(isKind(BOX)) {
+				match(BOX);
+				GuardedBlock GuardedBlock = GuardedBlock();
+				guardedBlocks.add(GuardedBlock);
+			}
+			match(RES_od);
+			return new DoStatement(firstToken, guardedBlocks);
+		}
+		else if (isKind(RES_if)){
+			List<GuardedBlock> guardedBlocks = new ArrayList<GuardedBlock>();
+			match(RES_if);
+			GuardedBlock guardedBlock = GuardedBlock();
+			guardedBlocks.add(guardedBlock);
+			while(isKind(BOX)) {
+				match(BOX);
+				GuardedBlock GuardedBlock = GuardedBlock();
+				guardedBlocks.add(GuardedBlock);
+			}
+			match(RES_fi);
+			return new IfStatement(firstToken, guardedBlocks);
+		}
+		else if (isKind(RETURN)){
+			match(RETURN);
+			Expr = expr();
+			return new ReturnStatement(firstToken, Expr);
+		}
+		else if (isKind(BLOCK_OPEN)) {
+			BlockStatement();
+		}
+		throw new SyntaxException("Statement not implemented correctly!");
 	}
 
 	private GuardedBlock GuardedBlock() throws PLCCompilerException{
-		throw new PLCCompilerException("Not Implemented!");
+		IToken firstToken = t;
+		Expr guard = null;
+		guard = expr();
+		match(RARROW);
+		Block Block = null;
+		Block = Block();
+		return new GuardedBlock(firstToken, guard, Block);
 	}
 
-	private Block BlockStatement() throws PLCCompilerException {
-		throw new PLCCompilerException("Not Implemented!");
+	private void BlockStatement() throws PLCCompilerException {
+		Block();
 	}
 }
