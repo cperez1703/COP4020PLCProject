@@ -445,7 +445,7 @@ public class Parser implements IParser {
 		}
 		else if (isKind(BLOCK_OPEN)) {
 			Block block = BlockStatement();
-			return new StatementBlock(firstToken,block);
+			return new StatementBlock(firstToken, block);
 		}
 		throw new SyntaxException("Statement not implemented correctly!");
 	}
