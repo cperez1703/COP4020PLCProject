@@ -444,7 +444,8 @@ public class Parser implements IParser {
 			return new ReturnStatement(firstToken, Expr);
 		}
 		else if (isKind(BLOCK_OPEN)) {
-			BlockStatement();
+			Block block = BlockStatement();
+			return new StatementBlock(firstToken,block);
 		}
 		throw new SyntaxException("Statement not implemented correctly!");
 	}
@@ -459,7 +460,7 @@ public class Parser implements IParser {
 		return new GuardedBlock(firstToken, guard, Block);
 	}
 
-	private void BlockStatement() throws PLCCompilerException {
-		Block();
+	private Block BlockStatement() throws PLCCompilerException {
+		return Block();
 	}
 }
