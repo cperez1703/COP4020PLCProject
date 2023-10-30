@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="COP4020PLCProject">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/Assignment1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/.git.zip!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
