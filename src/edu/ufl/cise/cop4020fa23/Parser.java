@@ -257,7 +257,7 @@ public class Parser implements IParser {
 		if(isKind(BANG,MINUS,RES_width,RES_height)){
 			op = firstToken;
 			consume();
-			e = UnaryExpr();
+			e = UnaryExpr();//
 			return new UnaryExpr(firstToken,op,e);
 		}else{
 			e = PostFixExpr();
