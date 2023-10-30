@@ -5,7 +5,7 @@ import edu.ufl.cise.cop4020fa23.exceptions.PLCCompilerException;
 
 public class TypeCheckVisitor implements ASTVisitor {
     SymbolTable s = new SymbolTable();
-
+    //hello
     @Override
     public Object visitAssignmentStatement(AssignmentStatement assignmentStatement, Object arg) throws PLCCompilerException {
         return null;
