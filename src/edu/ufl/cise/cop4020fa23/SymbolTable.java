@@ -39,11 +39,11 @@ public class SymbolTable {
         current_Num = scope_stack.pop();
     }
 
-    public void insertName(String string, NameDef nameDef) throws TypeCheckException {
-        if(symbolTable.containsKey(string)){
-            symbolTable.get(string).next(new Entry(current_Num,nameDef,null));
+    public void insertName(NameDef nameDef) throws TypeCheckException {
+        if(symbolTable.containsKey(nameDef.getName())){
+            symbolTable.get(nameDef.getName()).next(new Entry(current_Num,nameDef,null));
         }else{
-            symbolTable.put(string,new Entry(current_Num,nameDef, null));
+            symbolTable.put(nameDef.getName(),new Entry(current_Num,nameDef, null));
         }
     }
     public NameDef lookup(String name) throws TypeCheckException {
