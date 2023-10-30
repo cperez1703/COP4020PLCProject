@@ -3,19 +3,33 @@ package edu.ufl.cise.cop4020fa23;
 import edu.ufl.cise.cop4020fa23.ast.NameDef;
 import edu.ufl.cise.cop4020fa23.exceptions.TypeCheckException;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
+import java.util.Objects;
 import java.util.Stack;
-import java.util.jar.Attributes;
 
 public class SymbolTable {
     int current_Num;
     int next_Num;
     Stack<Integer> scope_stack = new Stack<>();
+    public class Entry {
+        Integer scope = 0;
+        NameDef nameDef = null;
+        Entry entry = null;
+        public Entry(Integer s, NameDef n, Entry e){
+            scope = s;
+            nameDef = n;
+            entry = e;
+        }
+        public void next(Entry e){
+            entry = e;
+        }
+    }
+
+    HashMap<String, Entry> symbolTable = new HashMap<>();
 
     public SymbolTable() {
-        Map<String, NameDef> symbolTable = new HashMap<>();
+        current_Num = 0;
+        next_Num = 0;
     }
     public void enterScope() {
         current_Num = next_Num++;
@@ -25,12 +39,31 @@ public class SymbolTable {
         current_Num = scope_stack.pop();
     }
 
-    public void insertName(NameDef nameDef) throws TypeCheckException {
-
+    public void insertName(String string, NameDef nameDef) throws TypeCheckException {
+        if(symbolTable.containsKey(string)){
+            symbolTable.get(string).next(new Entry(current_Num,nameDef,null));
+        }else{
+            symbolTable.put(string,new Entry(current_Num,nameDef, null));
+        }
     }
-
-    public NameDef lookup(NameDef name) {
-            return null;
+    public NameDef lookup(String name) throws TypeCheckException {
+        if(symbolTable.containsKey(name)){
+            Integer num = scope_stack.firstElement();
+            Entry cur = symbolTable.get(name);
+            while(cur.entry!=null) {
+                if (Objects.equals(cur.scope, num)) {
+                    return cur.nameDef;
+                } else {
+                    cur = cur.entry;
+                }
+            }
+            if(Objects.equals(cur.scope, num)){
+                return cur.nameDef;
+            }else{
+                throw new TypeCheckException("Name not found");
+            }
+        }else{
+            throw new TypeCheckException("Name not found");
+        }
     }
-
 }
