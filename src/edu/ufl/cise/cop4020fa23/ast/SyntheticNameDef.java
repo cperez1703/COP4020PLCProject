@@ -17,7 +17,7 @@ import edu.ufl.cise.cop4020fa23.IToken;
  * 
  */
 public class SyntheticNameDef extends NameDef {
-
+//
 	/** Declaration for implicitly declared variables.  This class is not used in the Parser */
 	
 	final String name;
