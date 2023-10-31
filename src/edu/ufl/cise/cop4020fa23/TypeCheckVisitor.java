@@ -36,6 +36,7 @@ public class TypeCheckVisitor implements ASTVisitor {
         }
         st.exitScope();
         return block;
+        //Done
     }
 
     @Override
@@ -55,7 +56,11 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     @Override
     public Object visitDeclaration(Declaration declaration, Object arg) throws PLCCompilerException {
-        if (declaration.getInitializer() == null || declaration.getNameDef().equals())
+        declaration.getNameDef().visit(this, arg);
+        Expr expr = declaration.getInitializer();
+        if (expr == null || expr.getType() == name)
+
+
         return declaration;
     }
 
@@ -66,6 +71,7 @@ public class TypeCheckVisitor implements ASTVisitor {
         Type typeH = (Type) dimension.getHeight().visit(this, arg);
         check(typeH == Type.INT, dimension, "image height must be int");
         return dimension;
+        //Done
     }
 
     @Override
@@ -109,6 +115,7 @@ public class TypeCheckVisitor implements ASTVisitor {
         }
         st.insertName(nameDef);
         return type;
+        //IP (??)
     }
 
     @Override
@@ -116,6 +123,7 @@ public class TypeCheckVisitor implements ASTVisitor {
         Type type = Type.INT;
         numLitExpr.setType(type);
         return type;
+        //Done
     }
 
     @Override
@@ -141,6 +149,7 @@ public class TypeCheckVisitor implements ASTVisitor {
         program.getBlock().visit(this, arg);
         st.exitScope();
         return type;
+        //Done
     }
 
     @Override
@@ -153,6 +162,7 @@ public class TypeCheckVisitor implements ASTVisitor {
         Type type = Type.STRING;
         stringLitExpr.setType(type);
         return type;
+        //Done
     }
 
     @Override
@@ -164,6 +174,7 @@ public class TypeCheckVisitor implements ASTVisitor {
     public Object visitWriteStatement(WriteStatement writeStatement, Object arg) throws PLCCompilerException {
         writeStatement.getExpr().visit(this, arg);
         return writeStatement;
+        //Done
     }
 
     @Override
@@ -171,6 +182,7 @@ public class TypeCheckVisitor implements ASTVisitor {
         Type type = Type.BOOLEAN;
         booleanLitExpr.setType(type);
         return type;
+        //Done
     }
 
     @Override
