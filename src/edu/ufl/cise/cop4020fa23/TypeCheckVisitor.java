@@ -21,7 +21,28 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     @Override
     public Object visitAssignmentStatement(AssignmentStatement assignmentStatement, Object arg) throws PLCCompilerException {
-        return null;
+        st.enterScope();
+        LValue lvalue = assignmentStatement.getlValue();
+        Expr expr = assignmentStatement.getE();
+        lvalue.visit(this,arg);
+        expr.visit(this,arg);
+        if(expr.getType() == lvalue.getType()){
+            st.exitScope();
+            return assignmentStatement;
+        }else if(lvalue.getType() == Type.PIXEL && expr.getType() == Type.INT){
+            st.exitScope();
+            return assignmentStatement;
+        }else if(lvalue.getType() == Type.IMAGE && expr.getType()==Type.PIXEL){
+            st.exitScope();
+            return assignmentStatement;
+        }else if(lvalue.getType() == Type.IMAGE && expr.getType()==Type.INT){
+            st.exitScope();
+            return assignmentStatement;
+        }else if(lvalue.getType() == Type.IMAGE && expr.getType()==Type.STRING){
+            st.exitScope();
+            return assignmentStatement;
+        }
+        throw new TypeCheckException("Invalid Assignment Statement");
     }
 
     @Override
@@ -84,12 +105,14 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     @Override
     public Object visitBlockStatement(StatementBlock statementBlock, Object arg) throws PLCCompilerException {
-        return null;
+        statementBlock.getBlock().visit(this,arg);
+        return statementBlock;
+        //Done
     }
 
     @Override
     public Object visitChannelSelector(ChannelSelector channelSelector, Object arg) throws PLCCompilerException {
-        return null;
+        return channelSelector;
     }
 
     @Override
@@ -127,33 +150,78 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     @Override
     public Object visitDoStatement(DoStatement doStatement, Object arg) throws PLCCompilerException {
-        doStatement.visit(this, arg);
+        List<GuardedBlock> gBlockElems = doStatement.getGuardedBlocks();
+        for(GuardedBlock elem:gBlockElems){
+            elem.visit(this,arg);
+        }
         return doStatement;
+        //Done
     }
 
     @Override
     public Object visitExpandedPixelExpr(ExpandedPixelExpr expandedPixelExpr, Object arg) throws PLCCompilerException {
-        return null;
+        check(expandedPixelExpr.getRed().getType()==Type.INT, expandedPixelExpr, "Invalid Red");
+        check(expandedPixelExpr.getGreen().getType()==Type.INT, expandedPixelExpr, "Invalid Green");
+        check(expandedPixelExpr.getBlue().getType()==Type.INT, expandedPixelExpr, "Invalid Blue");
+        expandedPixelExpr.setType(Type.PIXEL);
+        return expandedPixelExpr;
     }
 
     @Override
     public Object visitGuardedBlock(GuardedBlock guardedBlock, Object arg) throws PLCCompilerException {
-        return null;
+        Type type = (Type) guardedBlock.getBlock().visit(this,arg);
+        check(type == Type.BOOLEAN, guardedBlock, "guarded block must be bool");
+        return type;
+        //Done
     }
 
     @Override
     public Object visitIdentExpr(IdentExpr identExpr, Object arg) throws PLCCompilerException {
-        return null;
+        check(st.lookup(identExpr.getName())!=null, identExpr, "Ident Expr doesn't exist");
+        identExpr.setNameDef(st.lookup(identExpr.getName()));
+        identExpr.setType(identExpr.getNameDef().getType());
+        return identExpr;
     }
 
     @Override
     public Object visitIfStatement(IfStatement ifStatement, Object arg) throws PLCCompilerException {
-        return null;
+        List<GuardedBlock> gBlockElems = ifStatement.getGuardedBlocks();
+        for(GuardedBlock elem:gBlockElems){
+            elem.visit(this,arg);
+        }
+        return ifStatement;
+        //Done
     }
 
     @Override
     public Object visitLValue(LValue lValue, Object arg) throws PLCCompilerException {
-        return null;
+        NameDef nameDef = st.lookup(lValue.getName());
+        Type varType = lValue.getNameDef().getType();
+        Type type = null;
+        if(lValue.getPixelSelector()!=null){
+            if(varType!=Type.IMAGE)throw new TypeCheckException("Invalid LValue");
+        }
+        if(lValue.getChannelSelector()!=null){
+            if(varType==Type.IMAGE || varType==Type.PIXEL){
+            }else{
+                throw new TypeCheckException("Invalid LValue");
+            }
+        }
+        if(lValue.getPixelSelector()==null && lValue.getChannelSelector()==null){
+            type = varType;
+        }else if(varType == Type.IMAGE){
+            if(lValue.getPixelSelector()!=null && lValue.getChannelSelector()==null){
+                type = Type.PIXEL;
+            }else if(lValue.getPixelSelector()!=null && lValue.getChannelSelector()!=null){
+                type = Type.INT;
+            }else if(lValue.getPixelSelector()==null && lValue.getChannelSelector()!=null){
+                type = Type.IMAGE;
+            }
+        }else if (varType == Type.PIXEL && lValue.getPixelSelector()==null && lValue.getChannelSelector()!=null){
+            type = Type.INT;
+        }
+        lValue.setType(type);
+        return lValue;
     }
 
     @Override
@@ -234,7 +302,10 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     @Override
     public Object visitReturnStatement (ReturnStatement returnStatement, Object arg) throws PLCCompilerException {
-        return null;
+        Type type = (Type) returnStatement.getE().visit(this,arg);
+        check(type==root.getType(),returnStatement,"Invalid Return Statement Type");
+        return type;
+        //Done?
     }
 
     @Override
@@ -281,7 +352,10 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     @Override
     public Object visitConstExpr (ConstExpr constExpr, Object arg) throws PLCCompilerException {
-        return null;
+        Type type = null;
+        if(Objects.equals(constExpr.getName(), "Z"))type = Type.INT;
+        else type = Type.PIXEL;
+        return type;
     }
 }
 
