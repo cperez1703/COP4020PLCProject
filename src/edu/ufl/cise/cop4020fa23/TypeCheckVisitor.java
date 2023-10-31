@@ -85,6 +85,7 @@ public class TypeCheckVisitor implements ASTVisitor {
                     inferBinaryType = left.getType();
                 }
             }
+            binaryExpr.setType(inferBinaryType);
             return inferBinaryType;
         } else {
             throw new PLCCompilerException();
