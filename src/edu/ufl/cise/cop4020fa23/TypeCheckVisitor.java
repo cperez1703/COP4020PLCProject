@@ -130,13 +130,13 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     @Override
     public Object visitDeclaration(Declaration declaration, Object arg) throws PLCCompilerException {
-        NameDef nameDef = declaration.getNameDef();
         Expr expr = declaration.getInitializer();
+        NameDef nameDef = declaration.getNameDef();
+        Type type = null;
         if (expr == null || expr.getType() == nameDef.getType() || (expr.getType() == Type.STRING && nameDef.getType() == Type.IMAGE)) {
-            Type type = nameDef.getType();
-            declaration.getInitializer().setType(type);
+            type = nameDef.getType();
         }
-        return declaration;
+        return type;
     }
 
     @Override
@@ -227,15 +227,20 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     @Override
     public Object visitNameDef(NameDef nameDef, Object arg) throws PLCCompilerException {
-        Type type = null;
-        if (nameDef.getDimension() != null) {
-            type = Type.IMAGE;
-        } else {
-            type = nameDef.getType();
+        Type type = nameDef.getType();
+        if (nameDef.getType() !=null) {
+            if (nameDef.getDimension() != null) {
+                type = Type.IMAGE;
+            } else if (type == Type.INT || type == Type.BOOLEAN || type == Type.STRING || type == Type.PIXEL || type == Type.IMAGE) {
+                type = nameDef.getType();
+            }
+            st.insertName(nameDef);
+            return type;
+            //IP (??)
         }
-        st.insertName(nameDef);
-        return type;
-        //IP (??)
+        else {
+            throw new TypeCheckException();
+        }
     }
 
     @Override
