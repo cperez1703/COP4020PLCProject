@@ -47,51 +47,55 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     @Override
     public Object visitBinaryExpr(BinaryExpr binaryExpr, Object arg) throws PLCCompilerException {
-        if (binaryExpr != null) {
-            Expr left = binaryExpr.getLeftExpr();
-            IToken op = binaryExpr.getOp();
-            Expr right = binaryExpr.getRightExpr();
-            Type inferBinaryType = null;
-            if (op.kind() == Kind.EQ) {
-                if (right.getType() == left.getType())
-                    inferBinaryType = Type.BOOLEAN;
-            } else if (op.kind() == Kind.PLUS) {
-                if (right.getType() == left.getType()) {
-                    inferBinaryType = left.getType();
-                }
-
-            } else if (op.kind() == Kind.BITOR || op.kind() == Kind.BITAND) {
-                if (left.getType() == Type.PIXEL && right.getType() == Type.PIXEL) {
-                    inferBinaryType = Type.PIXEL;
-                }
-            } else if (op.kind() == Kind.OR || op.kind() == Kind.AND) {
-                if (left.getType() == Type.BOOLEAN && right.getType() == Type.BOOLEAN) {
-                    inferBinaryType = Type.BOOLEAN;
-                }
-            } else if (op.kind() == Kind.LT || op.kind() == Kind.GT || op.kind() == Kind.LE || op.kind() == Kind.GE) {
-                if (right.getType() == Type.INT && left.getType() == Type.INT) {
-                    inferBinaryType = Type.BOOLEAN;
-                }
-            } else if (op.kind() == Kind.EXP) {
-                if (left.getType() == Type.INT && right.getType() == Type.INT) {
-                    inferBinaryType = Type.INT;
-                } else if (left.getType() == Type.PIXEL && right.getType() == Type.INT) {
-                    inferBinaryType = Type.PIXEL;
-                }
-            } else if (op.kind() == Kind.MINUS || op.kind() == Kind.TIMES || op.kind() == Kind.DIV || op.kind() == Kind.MOD) {
-                if (op.kind() != Kind.MINUS && (left.getType() == Type.PIXEL || left.getType() == Type.IMAGE) && right.getType() == Type.INT) {
-                    inferBinaryType = left.getType();
-                } else if ((left.getType() == Type.INT || left.getType() == Type.PIXEL || left.getType() == Type.IMAGE) && right.getType() == left.getType()) {
-                    inferBinaryType = left.getType();
-                }
+        Type inferBinaryType = null;
+        Type left = binaryExpr.getLeftExpr().getType();
+        Kind op = binaryExpr.getOp().kind();
+        Type right = binaryExpr.getRightExpr().getType();
+        if (op == Kind.BITOR || op == Kind.BITAND) {
+            if (left == Type.PIXEL && right == Type.PIXEL) {
+                inferBinaryType = Type.PIXEL;
             }
-            binaryExpr.setType(inferBinaryType);
-            return inferBinaryType;
-        } else {
-            throw new PLCCompilerException();
         }
+        else if (op == Kind.AND || op == Kind.OR) {
+            if (left == Type.BOOLEAN && right == Type.BOOLEAN) {
+                inferBinaryType = Type.BOOLEAN;
+            }
+        }
+        else if (op == Kind.LT || op == Kind.GT || op == Kind.LE || op == Kind.GE) {
+            if (right == Type.INT && left == Type.INT) {
+                inferBinaryType = Type.BOOLEAN;
+            }
+        }
+        else if (op == Kind.EQ && right == left) {
+            inferBinaryType = Type.BOOLEAN;
+        }
+        else if (op == Kind.EXP) {
+            if (left == Type.INT && right == Type.INT) {
+                inferBinaryType = Type.INT;
+            }
+            else if (left == Type.PIXEL && right == Type.INT) {
+                inferBinaryType = Type.PIXEL;
+            }
+        }
+        else if (op == Kind.PLUS) {
+            if (right == left) {
+                inferBinaryType = left;
+            }
+        }
+        else if (op == Kind.MINUS || op == Kind.TIMES || op == Kind.DIV || op == Kind.MOD) {
+            if ((left == Type.INT || left == Type.PIXEL || left == Type.IMAGE) && right == left) {
+                inferBinaryType = left;
+            }
+            else if (op != Kind.MINUS && (left == Type.PIXEL || left == Type.IMAGE) && right == Type.INT) {
+                inferBinaryType = left;
+            }
+        }
+        else {
+            throw new TypeCheckException();
+        }
+        binaryExpr.setType(inferBinaryType);
+        return inferBinaryType;
     }
-
     @Override
     public Object visitBlock(Block block, Object arg) throws PLCCompilerException {
         st.enterScope();
@@ -113,7 +117,8 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     @Override
     public Object visitChannelSelector(ChannelSelector channelSelector, Object arg) throws PLCCompilerException {
-        return channelSelector;
+        channelSelector.visit(this, arg);
+        return channelSelector.color();
     }
 
     @Override
@@ -282,8 +287,8 @@ public class TypeCheckVisitor implements ASTVisitor {
                     inferPostFixExprType = Type.INT;
                 }
             }
+            exprType.setType(inferPostFixExprType);
             return inferPostFixExprType;
-
         }
         else {
             throw new TypeCheckException();
@@ -337,7 +342,7 @@ public class TypeCheckVisitor implements ASTVisitor {
             }
             return inferUnaryExprType;
         } else {
-            return new PLCCompilerException();
+            throw new TypeCheckException();
         }
     }
 
