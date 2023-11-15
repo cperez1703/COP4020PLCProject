@@ -48,7 +48,7 @@ import java.util.Stack;
 //    }
 //    public NameDef lookup(String name) throws TypeCheckException {
 //        if(symbolTable.containsKey(name)){
-//            Integer num = scope_stack.firstElement();
+//            Integer num = scope_stack.peek();
 //            Entry cur = symbolTable.get(name);
 //            while(cur.entry!=null) {
 //                if (Objects.equals(cur.scope, num)) {
@@ -76,18 +76,18 @@ public class SymbolTable {
     public class Entry {
         Integer scope = 0;
         NameDef nameDef = null;
-        edu.ufl.cise.cop4020fa23.SymbolTable.Entry entry = null;
-        public Entry(Integer s, NameDef n, edu.ufl.cise.cop4020fa23.SymbolTable.Entry e){
+        Entry entry = null;
+        public Entry(Integer s, NameDef n, Entry e){
             scope = s;
             nameDef = n;
             entry = e;
         }
-        public void next(edu.ufl.cise.cop4020fa23.SymbolTable.Entry e){
+        public void next(Entry e){
             entry = e;
         }
     }
 
-    HashMap<String, edu.ufl.cise.cop4020fa23.SymbolTable.Entry> symbolTable = new HashMap<>();
+    HashMap<String, Entry> symbolTable = new HashMap<>();
 
     public SymbolTable() {
         current_Num = 0;
@@ -103,26 +103,32 @@ public class SymbolTable {
 
     public void insertName(NameDef nameDef) throws TypeCheckException {
         if(symbolTable.containsKey(nameDef.getName())){
-            symbolTable.get(nameDef.getName()).next(new edu.ufl.cise.cop4020fa23.SymbolTable.Entry(next_Num,nameDef,null));
+            symbolTable.get(nameDef.getName()).next(new Entry(current_Num,nameDef,null));
         }else{
-            symbolTable.put(nameDef.getName(),new edu.ufl.cise.cop4020fa23.SymbolTable.Entry(next_Num,nameDef, null));
+            symbolTable.put(nameDef.getName(),new Entry(current_Num,nameDef, null));
         }
     }
     public NameDef lookup(String name) throws TypeCheckException {
-        NameDef nameDef = null;
         if(symbolTable.containsKey(name)){
             Integer num = scope_stack.peek();
-            edu.ufl.cise.cop4020fa23.SymbolTable.Entry cur = symbolTable.get(name);
-            if (num.equals(cur.scope)) {
-                nameDef = cur.nameDef;
+            Entry cur = symbolTable.get(name);
+            while(scope_stack!=null) {
+                if (Objects.equals(cur.scope, num)) {
+                    return cur.nameDef;
+                }
+                else {
+                    num -= 1;
+                }
             }
-            else {
-                throw new TypeCheckException("Not in proper scope");
+            if(Objects.equals(cur.scope, num)){
+                return cur.nameDef;
+            }else{
+                System.out.println("Name not found");
+                return null;
             }
+        }else{
+            System.out.println("Name not found");
+            return null;
         }
-        else {
-            throw new TypeCheckException("Name could not be found");
-        }
-        return nameDef;
     }
 }

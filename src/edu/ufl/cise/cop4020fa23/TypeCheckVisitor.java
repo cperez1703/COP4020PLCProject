@@ -197,7 +197,12 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     @Override
     public Object visitGuardedBlock(GuardedBlock guardedBlock, Object arg) throws PLCCompilerException {
-        Type type = (Type) guardedBlock.getBlock().visit(this,arg);
+//        Type type = (Type) guardedBlock.getBlock().visit(this,arg);
+        Expr expr = guardedBlock.getGuard();
+        expr.visit(this,arg);
+        Block gbBlock = guardedBlock.getBlock();
+        gbBlock.visit(this,arg);
+        Type type = expr.getType();
         check(type == Type.BOOLEAN, guardedBlock, "guarded block must be bool");
         return type;
         //Done
@@ -224,12 +229,10 @@ public class TypeCheckVisitor implements ASTVisitor {
     @Override
     public Object visitLValue(LValue lValue, Object arg) throws PLCCompilerException {
         NameDef nameDef = st.lookup(lValue.getName());
-        lValue.getNameDef().visit(this,arg);
-        Type varType = lValue.getNameDef().getType();
-        Type type = null;
-        lValue.getPixelSelector().visit(this,arg);
+        Type varType = nameDef.getType();
+        Type inferLValueType = null;
         if(lValue.getPixelSelector()!=null){
-            if(varType!=Type.IMAGE)throw new TypeCheckException("Invalid LValue");
+            varType = Type.IMAGE;
         }
         if(lValue.getChannelSelector()!=null){
             if(varType==Type.IMAGE || varType==Type.PIXEL){
@@ -239,19 +242,20 @@ public class TypeCheckVisitor implements ASTVisitor {
             }
         }
         if(lValue.getPixelSelector()==null && lValue.getChannelSelector()==null){
-            type = varType;
+            inferLValueType = varType;
         }else if(varType == Type.IMAGE){
             if(lValue.getPixelSelector()!=null && lValue.getChannelSelector()==null){
-                type = Type.PIXEL;
+                inferLValueType = Type.PIXEL;
             }else if(lValue.getPixelSelector()!=null && lValue.getChannelSelector()!=null){
-                type = Type.INT;
+                inferLValueType = Type.INT;
             }else if(lValue.getPixelSelector()==null && lValue.getChannelSelector()!=null){
-                type = Type.IMAGE;
+                inferLValueType = Type.IMAGE;
             }
         }else if (varType == Type.PIXEL && lValue.getPixelSelector()==null && lValue.getChannelSelector()!=null){
-            type = Type.INT;
+            inferLValueType = Type.INT;
         }
-        lValue.setType(type);
+        check(inferLValueType != null, lValue, "inferLValue not defined");
+        lValue.setType(inferLValueType);
         return lValue;
     }
 
@@ -286,19 +290,20 @@ public class TypeCheckVisitor implements ASTVisitor {
     public Object visitPixelSelector(PixelSelector pixelSelector, Object arg) throws PLCCompilerException {
         Expr xExpr = pixelSelector.xExpr();
         Expr yExpr = pixelSelector.yExpr();
-        Type xType = xExpr.getType();
-        Type yType = yExpr.getType();
-
-        if(arg instanceof LValue) {
+        if(arg.equals(true)) {
             check(xExpr instanceof IdentExpr || xExpr instanceof NumLitExpr, pixelSelector, "not ident or numlit");
             check(yExpr instanceof IdentExpr || yExpr instanceof NumLitExpr, pixelSelector, "not ident or numlit");
             if (xExpr instanceof IdentExpr && st.lookup(((IdentExpr)xExpr).getName()) == null) {
                 st.insertName(new SyntheticNameDef(((IdentExpr)xExpr).getName()));
             }
             if (yExpr instanceof IdentExpr && st.lookup(((IdentExpr)yExpr).getName()) == null) {
-                st.insertName(new SyntheticNameDef(((IdentExpr) yExpr).getName()));
+                st.insertName(new SyntheticNameDef(((IdentExpr)yExpr).getName()));
             }
         }
+        xExpr.visit(this,arg);
+        yExpr.visit(this,arg);
+        Type xType = xExpr.getType();
+        Type yType = yExpr.getType();
         check(xType == Type.INT, pixelSelector, "Pixel X not an int");
         check(yType == Type.INT, pixelSelector, "Pixel Y not an int");
         return null;
@@ -349,9 +354,11 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     @Override
     public Object visitReturnStatement (ReturnStatement returnStatement, Object arg) throws PLCCompilerException {
-        Type type = (Type) returnStatement.getE().visit(this,arg);
-        check(type==root.getType(),returnStatement,"Invalid Return Statement Type");
-        return type;
+        Expr returnExpr = returnStatement.getE();
+        returnExpr.visit(this, arg);
+        Type exprType = returnExpr.getType();
+        check(exprType==root.getType(),returnStatement,"Invalid Return Statement Type");
+        return exprType;
         //Done?
     }
 
