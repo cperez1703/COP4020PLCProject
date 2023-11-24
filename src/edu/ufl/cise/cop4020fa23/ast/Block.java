@@ -9,11 +9,14 @@
  */
 package edu.ufl.cise.cop4020fa23.ast;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.Stack;
 
 import edu.ufl.cise.cop4020fa23.IToken;
 import edu.ufl.cise.cop4020fa23.exceptions.PLCCompilerException;
+import edu.ufl.cise.cop4020fa23.exceptions.TypeCheckException;
 
 /**
  * 
