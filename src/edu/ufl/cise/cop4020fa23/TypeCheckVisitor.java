@@ -393,9 +393,9 @@ public class TypeCheckVisitor implements ASTVisitor {
     @Override
     public Object visitUnaryExpr (UnaryExpr unaryExpr, Object arg) throws PLCCompilerException {
         Type inferUnaryExprType = null;
-        Type ExprType = unaryExpr.getType();
         Kind op = unaryExpr.getOp();
         unaryExpr.getExpr().visit(this,arg);
+        Type ExprType = unaryExpr.getExpr().getType();
         if (ExprType == Type.BOOLEAN && op == Kind.BANG) {
             inferUnaryExprType = Type.BOOLEAN;
         } else if (ExprType == Type.INT && op == Kind.MINUS) {
