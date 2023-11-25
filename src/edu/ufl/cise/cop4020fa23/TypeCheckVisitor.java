@@ -24,26 +24,28 @@ public class TypeCheckVisitor implements ASTVisitor {
     public Object visitAssignmentStatement(AssignmentStatement assignmentStatement, Object arg) throws PLCCompilerException {
         st.enterScope();
         LValue lvalue = assignmentStatement.getlValue();
-        Expr expr = assignmentStatement.getE();
         lvalue.visit(this,arg);
+        Expr expr = assignmentStatement.getE();
         expr.visit(this,arg);
+        boolean assignmentCompatible = false;
         if(expr.getType() == lvalue.getType()){
-            st.exitScope();
-            return assignmentStatement;
-        }else if(lvalue.getType() == Type.PIXEL && expr.getType() == Type.INT){
-            st.exitScope();
-            return assignmentStatement;
-        }else if(lvalue.getType() == Type.IMAGE && expr.getType()==Type.PIXEL){
-            st.exitScope();
-            return assignmentStatement;
-        }else if(lvalue.getType() == Type.IMAGE && expr.getType()==Type.INT){
-            st.exitScope();
-            return assignmentStatement;
-        }else if(lvalue.getType() == Type.IMAGE && expr.getType()==Type.STRING){
-            st.exitScope();
-            return assignmentStatement;
+            assignmentCompatible = true;
         }
-        throw new TypeCheckException("Invalid Assignment Statement");
+        else if(lvalue.getType() == Type.PIXEL && expr.getType() == Type.INT){
+            assignmentCompatible = true;
+        }
+        else if(lvalue.getType() == Type.IMAGE && expr.getType()==Type.PIXEL){
+            assignmentCompatible = true;
+        }
+        else if(lvalue.getType() == Type.IMAGE && expr.getType()==Type.INT){
+            assignmentCompatible = true;
+        }
+        else if(lvalue.getType() == Type.IMAGE && expr.getType()==Type.STRING){
+            assignmentCompatible = true;
+        }
+        check(assignmentCompatible == true, assignmentStatement, "not assignment compatible");
+        st.exitScope();
+        return assignmentStatement;
     }
 
     @Override
@@ -122,7 +124,6 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     @Override
     public Object visitChannelSelector(ChannelSelector channelSelector, Object arg) throws PLCCompilerException {
-        channelSelector.visit(this, arg);
         return channelSelector.color();
     }
 
@@ -200,8 +201,8 @@ public class TypeCheckVisitor implements ASTVisitor {
 //        Type type = (Type) guardedBlock.getBlock().visit(this,arg);
         Expr expr = guardedBlock.getGuard();
         expr.visit(this,arg);
-        Block gbBlock = guardedBlock.getBlock();
-        gbBlock.visit(this,arg);
+        Block gBlock = guardedBlock.getBlock();
+        gBlock.visit(this,arg);
         Type type = expr.getType();
         check(type == Type.BOOLEAN, guardedBlock, "guarded block must be bool");
         return type;
@@ -228,13 +229,15 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     @Override
     public Object visitLValue(LValue lValue, Object arg) throws PLCCompilerException {
-        NameDef nameDef = st.lookup(lValue.getName());
-        Type varType = nameDef.getType();
+        NameDef lvalNameDef = st.lookup(lValue.getName());
+        Type varType = lvalNameDef.getType();
         Type inferLValueType = null;
         if(lValue.getPixelSelector()!=null){
+            lValue.getPixelSelector().visit(this,true);
             varType = Type.IMAGE;
         }
         if(lValue.getChannelSelector()!=null){
+            lValue.getChannelSelector().visit(this,arg);
             if(varType==Type.IMAGE || varType==Type.PIXEL){
                 varType = lValue.getVarType();
             }else{
@@ -243,15 +246,24 @@ public class TypeCheckVisitor implements ASTVisitor {
         }
         if(lValue.getPixelSelector()==null && lValue.getChannelSelector()==null){
             inferLValueType = varType;
-        }else if(varType == Type.IMAGE){
+        }
+        else if(varType == Type.IMAGE){
             if(lValue.getPixelSelector()!=null && lValue.getChannelSelector()==null){
+                lValue.getPixelSelector().visit(this,true);
                 inferLValueType = Type.PIXEL;
-            }else if(lValue.getPixelSelector()!=null && lValue.getChannelSelector()!=null){
+            }
+            else if(lValue.getPixelSelector()!=null && lValue.getChannelSelector()!=null){
+                lValue.getPixelSelector().visit(this,true);
+                lValue.getChannelSelector().visit(this,arg);
                 inferLValueType = Type.INT;
-            }else if(lValue.getPixelSelector()==null && lValue.getChannelSelector()!=null){
+            }
+            else if(lValue.getPixelSelector()==null && lValue.getChannelSelector()!=null){
+                lValue.getChannelSelector().visit(this,arg);
                 inferLValueType = Type.IMAGE;
             }
-        }else if (varType == Type.PIXEL && lValue.getPixelSelector()==null && lValue.getChannelSelector()!=null){
+        }
+        else if (varType == Type.PIXEL && lValue.getPixelSelector()==null && lValue.getChannelSelector()!=null){
+            lValue.getChannelSelector().visit(this,arg);
             inferLValueType = Type.INT;
         }
         check(inferLValueType != null, lValue, "inferLValue not defined");
@@ -304,35 +316,43 @@ public class TypeCheckVisitor implements ASTVisitor {
         yExpr.visit(this,arg);
         Type xType = xExpr.getType();
         Type yType = yExpr.getType();
+        xExpr.setType(xType);
+        yExpr.setType(yType);
         check(xType == Type.INT, pixelSelector, "Pixel X not an int");
         check(yType == Type.INT, pixelSelector, "Pixel Y not an int");
         return null;
     }
 
     @Override
-    public Object visitPostfixExpr(PostfixExpr postfixExpr, Object arg) throws TypeCheckException {
+    public Object visitPostfixExpr(PostfixExpr postfixExpr, Object arg) throws PLCCompilerException {
         Type inferPostFixExprType = null;
-        Expr exprType = postfixExpr.primary();
+        Expr expr = postfixExpr.primary();
+        expr.visit(this,arg);
         PixelSelector pixelSelector = postfixExpr.pixel();
         ChannelSelector channelSelector = postfixExpr.channel();
 
-        check(false, postfixExpr, "postfix expr undefined");
+        check(true, postfixExpr, "postfix expr undefined");
         if (pixelSelector == null && channelSelector == null) {
-            inferPostFixExprType = exprType.getType();
+            inferPostFixExprType = expr.getType();
         }
-        else if (exprType.getType() == Type.IMAGE && (pixelSelector != null && channelSelector == null)) {
+        else if (expr.getType() == Type.IMAGE && (pixelSelector != null && channelSelector == null)) {
+            pixelSelector.visit(this,true);
             inferPostFixExprType = Type.PIXEL;
         }
-        else if (exprType.getType() == Type.IMAGE && (pixelSelector != null && channelSelector != null)) {
+        else if (expr.getType() == Type.IMAGE && (pixelSelector != null && channelSelector != null)) {
+            pixelSelector.visit(this, true);
+            channelSelector.visit(this,arg);
             inferPostFixExprType = Type.INT;
         }
-        else if (exprType.getType() == Type.IMAGE && (pixelSelector == null && channelSelector != null)) {
+        else if (expr.getType() == Type.IMAGE && (pixelSelector == null && channelSelector != null)) {
+            channelSelector.visit(this,arg);
             inferPostFixExprType = Type.IMAGE;
         }
-        else if (exprType.getType() == Type.PIXEL && (pixelSelector == null && channelSelector != null)){
+        else if (expr.getType() == Type.PIXEL && (pixelSelector == null && channelSelector != null)){
+            channelSelector.visit(this,arg);
             inferPostFixExprType = Type.INT;
         }
-        exprType.setType(inferPostFixExprType);
+        postfixExpr.setType(inferPostFixExprType);
         return inferPostFixExprType;
     }
 
