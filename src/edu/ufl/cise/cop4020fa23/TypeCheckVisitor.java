@@ -268,6 +268,7 @@ public class TypeCheckVisitor implements ASTVisitor {
         }
         check(inferLValueType != null, lValue, "inferLValue not defined");
         lValue.setType(inferLValueType);
+        lValue.setNameDef(lvalNameDef);
         return lValue;
     }
 
