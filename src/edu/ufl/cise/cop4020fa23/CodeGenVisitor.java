@@ -171,8 +171,6 @@ public class CodeGenVisitor implements ASTVisitor{
     @Override
     public Object visitProgram(Program program, Object arg) throws PLCCompilerException {
         StringBuilder sb;
-//        if(arg!=null)sb= (StringBuilder) arg;
-//        else sb = new StringBuilder();
         sb = new StringBuilder();
         sb.append("package edu.ufl.cise.cop4020fa23;\n");
         sb.append("import edu.ufl.cise.cop4020fa23.runtime.ConsoleIO;\n");
