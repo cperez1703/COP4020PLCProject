@@ -1,10 +1,16 @@
 package edu.ufl.cise.cop4020fa23;
 
 import edu.ufl.cise.cop4020fa23.ast.*;
+import edu.ufl.cise.cop4020fa23.ast.Dimension;
 import edu.ufl.cise.cop4020fa23.exceptions.PLCCompilerException;
 import edu.ufl.cise.cop4020fa23.runtime.ConsoleIO;
+import edu.ufl.cise.cop4020fa23.runtime.FileURLIO;
+import edu.ufl.cise.cop4020fa23.runtime.ImageOps;
+import edu.ufl.cise.cop4020fa23.runtime.PixelOps;
 import jdk.swing.interop.LightweightContentWrapper;
 
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.util.List;
 
 public class CodeGenVisitor implements ASTVisitor{
@@ -13,9 +19,60 @@ public class CodeGenVisitor implements ASTVisitor{
     @Override
     public Object visitAssignmentStatement(AssignmentStatement assignmentStatement, Object arg) throws PLCCompilerException {
         StringBuilder sb = new StringBuilder();
-        sb.append(assignmentStatement.getlValue().visit(this,arg));
-        sb.append("=");
-        sb.append(assignmentStatement.getE().visit(this,arg));
+        LValue lvalue = assignmentStatement.getlValue();
+        Expr expr = assignmentStatement.getE();
+        // !! IP (???)
+        if (lvalue.getVarType() == Type.IMAGE) {
+            if (lvalue.getPixelSelector() == null && lvalue.getChannelSelector() == null) {
+                if (expr.getType() == Type.IMAGE) {
+//                    ImageOps.copyInto(expr, lvalue); //need to get bufferedImages as input
+                }
+                else if (expr.getType() == Type.PIXEL) {
+//                    ImageOps.setAllPixels();
+                }
+                else if (expr.getType() == Type.STRING) {
+//                    FileURLIO.readImage();
+//                    ImageOps.copyInto(loadedImage, lvalue);
+                }
+            }
+
+        }
+        else if (lvalue.getVarType() == Type.PIXEL && lvalue.getChannelSelector() != null) {
+            //RED
+            if (lvalue.getChannelSelector().color() == Kind.RES_red) {
+                sb.append("PixelOps.setRed(");
+                sb.append(lvalue.visit(this,arg).toString());
+                sb.append(",");
+                sb.append(expr.visit(this,arg).toString());
+                sb.append(")");
+            }
+            //GREEN
+            else if (lvalue.getChannelSelector().color() == Kind.RES_green) {
+                sb.append("PixelOps.setGreen(");
+                sb.append(lvalue.visit(this,arg).toString());
+                sb.append(",");
+                sb.append(expr.visit(this,arg).toString());
+                sb.append(")");
+            }
+            //BLUE
+            else if (assignmentStatement.getlValue().getChannelSelector().color() == Kind.RES_blue) {
+                sb.append("PixelOps.setBlue(");
+                sb.append(lvalue.visit(this,arg).toString());
+                sb.append(",");
+                sb.append(expr.visit(this,arg).toString());
+                sb.append(")");
+            }
+        }
+        //Someone said something in slack about this
+        else if (lvalue.getVarType() == Type.PIXEL && lvalue.getChannelSelector() == null && expr.getType() == Type.INT) {
+//            lvalue = PixelOps.pack(expr,expr,expr);
+        }
+        else {
+            // !! CHECK: Added .toString() to these, not sure if correct
+            sb.append(lvalue.visit(this, arg).toString());
+            sb.append("=");
+            sb.append(expr.visit(this, arg).toString());
+        }
         return sb;
     }
 
@@ -38,13 +95,38 @@ public class CodeGenVisitor implements ASTVisitor{
             sb.append(")))");
         }else{
             sb.append("(");
-            sb.append(left.visit(this,arg).toString());
+            sb.append(left.visit(this, arg).toString());
             sb.append(" ");
             sb.append(binaryExpr.getOp().text());
             sb.append(" ");
-            sb.append(right.visit(this,arg).toString());
+            sb.append(right.visit(this, arg).toString());
             sb.append(")");
+//            if (left.getType() == Type.PIXEL && right.getType() == Type.PIXEL) {
+//
+//                ImageOps.binaryPackedPixelPixelOp(op,left,right);
+//            }
+//            else if (left.getType() == Type.IMAGE || right.getType() == Type.IMAGE) {
+//
+//            }
+//            else {
+//                sb.append("(");
+//                sb.append(left.visit(this, arg).toString());
+//                sb.append(" ");
+//                sb.append(binaryExpr.getOp().text());
+//                sb.append(" ");
+//                sb.append(right.visit(this, arg).toString());
+//                sb.append(")");
+//            }
         }
+        if (left.getType() == Type.PIXEL && right.getType() == Type.PIXEL) {
+            ImageOps.binaryPackedPixelPixelOp(ImageOps 1,1);
+
+        }
+
+        if (left.getType() == Type.PIXEL && right.getType() == Type.INT) {
+
+        }
+
         return sb;
     }
 
@@ -71,6 +153,12 @@ public class CodeGenVisitor implements ASTVisitor{
 
     @Override
     public Object visitChannelSelector(ChannelSelector channelSelector, Object arg) throws PLCCompilerException {
+//        if (arg.equals(LValue) {
+//
+//        }
+//        else {
+//
+//        }
         return null;
     }
 
@@ -90,17 +178,26 @@ public class CodeGenVisitor implements ASTVisitor{
     @Override
     public Object visitDeclaration(Declaration declaration, Object arg) throws PLCCompilerException {
         StringBuilder sb = new StringBuilder();
-        sb.append(declaration.getNameDef().visit(this,arg));
-        if(declaration.getInitializer()!=null){
-            sb.append("=");
-            sb.append(declaration.getInitializer().visit(this,arg));
+        if (declaration.getNameDef().getType() != Type.IMAGE) {
+            sb.append(declaration.getNameDef().visit(this, arg));
+            if (declaration.getInitializer() != null) {
+                sb.append("=");
+                sb.append(declaration.getInitializer().visit(this, arg));
+            }
         }
         return sb;
     }
 
     @Override
     public Object visitDimension(Dimension dimension, Object arg) throws PLCCompilerException {
-        return null;
+        StringBuilder sb = new StringBuilder();
+        Expr w = dimension.getWidth();
+        Expr h = dimension.getHeight();
+        sb.append(w.visit(this,arg).toString());
+        sb.append(", ");
+        sb.append(h.visit(this,arg).toString());
+        return sb;
+//        return new StringBuilder (dimension.toString()); //is this a temp>
     }
 
     @Override
@@ -110,7 +207,18 @@ public class CodeGenVisitor implements ASTVisitor{
 
     @Override
     public Object visitExpandedPixelExpr(ExpandedPixelExpr expandedPixelExpr, Object arg) throws PLCCompilerException {
-        return null;
+        StringBuilder sb = new StringBuilder();
+        sb.append("PixelOps.pack(");
+        Expr r = expandedPixelExpr.getRed();
+        Expr g = expandedPixelExpr.getGreen();
+        Expr b = expandedPixelExpr.getBlue();
+        sb.append(r.visit(this,arg).toString());
+        sb.append(", ");
+        sb.append(g.visit(this,arg).toString());
+        sb.append(", ");
+        sb.append(b.visit(this,arg).toString());
+        sb.append(")");
+        return sb;
     }
 
     @Override
@@ -139,6 +247,11 @@ public class CodeGenVisitor implements ASTVisitor{
         sb = new StringBuilder();
         String type = nameDef.getType().toString().toLowerCase();
         if(type.equals("string"))type="String";
+        else if (type.equals("image"))type="BufferedImage"; //this down to boolean are questionable, unsure if this is where to implement
+        else if(type.equals("pixel"))type="int";
+        else if (type.equals("int"))type="int";
+        else if (type.equals("void"))type="void";
+        else if (type.equals("boolean")) type="Boolean";
         sb.append(type);
         sb.append(" ");
         sb.append(nameDef.getName());//need to change to account for multiples(n is number)
@@ -160,12 +273,63 @@ public class CodeGenVisitor implements ASTVisitor{
 
     @Override
     public Object visitPixelSelector(PixelSelector pixelSelector, Object arg) throws PLCCompilerException {
-        return null;
+        StringBuilder sb = new StringBuilder();
+        Expr x = pixelSelector.xExpr();
+        Expr y = pixelSelector.yExpr();
+        sb.append(x.visit(this,arg).toString());
+        sb.append(", ");
+        sb.append(y.visit(this,arg).toString());
+        return sb;
     }
 
     @Override
     public Object visitPostfixExpr(PostfixExpr postfixExpr, Object arg) throws PLCCompilerException {
-        return null;
+        StringBuilder sb = new StringBuilder();
+        if (postfixExpr.getType() == Type.PIXEL) {
+            sb.append(postfixExpr.channel().visit(this,arg).toString());
+            sb.append("(");
+            sb.append(postfixExpr.visit(this,arg).toString());
+            sb.append(")");
+        }
+        else if (postfixExpr.getType() == Type.IMAGE) {
+            if (postfixExpr.pixel() != null && postfixExpr.channel() == null) {
+                sb.append("ImageOps.getRGB(");
+                sb.append(postfixExpr.visit(this,arg).toString());
+                sb.append(",");
+                sb.append(postfixExpr.channel().visit(this,arg).toString());
+                sb.append(")");
+            }
+            else if (postfixExpr.pixel() != null && postfixExpr.channel() != null) {
+                sb.append(postfixExpr.channel().visit(this,arg));
+                sb.append("(ImageOps.getRGB(");
+                sb.append(postfixExpr.visit(this,arg).toString());
+                sb.append(",");
+                sb.append(postfixExpr.pixel().visit(this,arg).toString());
+                sb.append("))");
+            }
+            else if (postfixExpr.pixel() == null && postfixExpr.channel() != null) {
+                //RED
+                if (postfixExpr.channel().color() == Kind.RES_red) {
+                    sb.append("ImageOps.extractRed(");
+                    sb.append(postfixExpr.visit(this,arg).toString());
+                    sb.append(")");
+
+                }
+                //GREEN
+                else if (postfixExpr.channel().color() == Kind.RES_green) {
+                    sb.append("ImageOps.extractGreen(");
+                    sb.append(postfixExpr.visit(this,arg).toString());
+                    sb.append(")");
+                }
+                //BLUE
+                else if (postfixExpr.channel().color() == Kind.RES_blue) {
+                    sb.append("ImageOps.extractBlue(");
+                    sb.append(postfixExpr.visit(this,arg).toString());
+                    sb.append(")");
+                }
+            }
+        }
+        return sb;
     }
 
     @Override
@@ -180,6 +344,11 @@ public class CodeGenVisitor implements ASTVisitor{
         sb.append("public static ");
         String type = program.getType().toString().toLowerCase();
         if(type.equals("string"))type="String";
+        else if (type.equals("image"))type="BufferedImage"; //this down to boolean are questionable, unsure if this is where to implement
+        else if(type.equals("pixel"))type="int";
+        else if (type.equals("int"))type="int";
+        else if (type.equals("void"))type="void";
+        else if (type.equals("boolean")) type="Boolean";
         sb.append(type);
         sb.append(" apply(");
         List<NameDef> params = program.getParams();
@@ -223,6 +392,12 @@ public class CodeGenVisitor implements ASTVisitor{
         if(op==Kind.BANG)sb.append("!");
         if(op==Kind.MINUS)sb.append("-");
         sb.append(unaryExpr.getExpr().visit(this,arg));
+        if(op == Kind.RES_height) {
+            sb.append(".getHeight()");
+        }
+        if(op == Kind.RES_width) {
+            sb.append(".getWidth()");
+        }
         sb.append(")");
         return sb;
     }
@@ -231,7 +406,15 @@ public class CodeGenVisitor implements ASTVisitor{
     public Object visitWriteStatement(WriteStatement writeStatement, Object arg) throws PLCCompilerException {
         StringBuilder sb = new StringBuilder();
         sb.append("ConsoleIO.write(");
-        sb.append(writeStatement.getExpr().visit(this,arg));
+        Type exprType = writeStatement.getExpr().getType();
+        // !! CHECK: not sure based off documentation
+//        if (exprType == Type.PIXEL) {
+//            ConsoleIO.writePixel(writeStatement.getExpr().visit(this,arg).);
+//        }
+//        else {
+//            sb.append(writeStatement.getExpr().visit(this, arg));
+//        }
+        sb.append(writeStatement.getExpr().visit(this, arg));
         sb.append(")");
         return sb;
     }
@@ -243,7 +426,69 @@ public class CodeGenVisitor implements ASTVisitor{
 
     @Override
     public Object visitConstExpr(ConstExpr constExpr, Object arg) throws PLCCompilerException {
-        return null;
+        StringBuilder sb = new StringBuilder();
+        if (constExpr.getName().equals("Z")) {
+            sb.append("255");
+        }
+        else {
+            sb.append("0x");
+            String color = constExpr.getName();
+            switch (color){
+                case "RED"-> {
+                    String hexstring = Integer.toHexString(Color.RED.getRGB());
+                    sb.append(hexstring);
+                }
+                case "BLUE"-> {
+                    String hexstring = Integer.toHexString(Color.BLUE.getRGB());
+                    sb.append(hexstring);
+                }
+                case "GREEN"-> {
+                    String hexstring = Integer.toHexString(Color.GREEN.getRGB());
+                    sb.append(hexstring);
+                }
+                case "GRAY"-> {
+                    String hexstring = Integer.toHexString(Color.GRAY.getRGB());
+                    sb.append(hexstring);
+                }
+                case "DARK_GRAY"-> {
+                    String hexstring = Integer.toHexString(Color.DARK_GRAY.getRGB());
+                    sb.append(hexstring);
+                }
+                case "LIGHT_GRAY"-> {
+                    String hexstring = Integer.toHexString(Color.LIGHT_GRAY.getRGB());
+                    sb.append(hexstring);
+                }
+                case "CYAN"-> {
+                    String hexstring = Integer.toHexString(Color.CYAN.getRGB());
+                    sb.append(hexstring);
+                }
+                case "PINK"-> {
+                    String hexstring = Integer.toHexString(Color.PINK.getRGB());
+                    sb.append(hexstring);
+                }
+                case "YELLOW"-> {
+                    String hexstring = Integer.toHexString(Color.YELLOW.getRGB());
+                    sb.append(hexstring);
+                }
+                case "MAGENTA"-> {
+                    String hexstring = Integer.toHexString(Color.MAGENTA.getRGB());
+                    sb.append(hexstring);
+                }
+                case "ORANGE"-> {
+                    String hexstring = Integer.toHexString(Color.ORANGE.getRGB());
+                    sb.append(hexstring);
+                }
+                case "BLACK"-> {
+                    String hexstring = Integer.toHexString(Color.BLACK.getRGB());
+                    sb.append(hexstring);
+                }
+                case "WHITE"-> {
+                    String hexstring = Integer.toHexString(Color.WHITE.getRGB());
+                    sb.append(hexstring);
+                }
+            }
+        }
+        return sb;
     }
 
 }

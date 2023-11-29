@@ -14,6 +14,7 @@ import edu.ufl.cise.cop4020fa23.runtime.ConsoleIO;
 import edu.ufl.cise.cop4020fa23.runtime.FileURLIO;
 import edu.ufl.cise.cop4020fa23.runtime.ImageOps;
 import edu.ufl.cise.cop4020fa23.runtime.PixelOps;
+import edu.ufl.cise.cop4020fa23.runtime.PLCRuntimeException;
 
 class CodeGenTest_Hw5_starter {
 
