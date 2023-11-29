@@ -161,13 +161,14 @@ class CodeGenTest_Hw5_starter {
 	 * 
 	 * Generated Java code
 	 * 
-	 * package edu.ufl.cise.cop4020fa23; import
-	 * edu.ufl.cise.cop4020fa23.runtime.PixelOps; import
-	 * edu.ufl.cise.cop4020fa23.runtime.ConsoleIO; import
-	 * edu.ufl.cise.cop4020fa23.runtime.ImageOps; public class colors{ public static
+	 * package edu.ufl.cise.cop4020fa23;
+	 * import edu.ufl.cise.cop4020fa23.runtime.PixelOps;
+	 * import edu.ufl.cise.cop4020fa23.runtime.ConsoleIO;
+	 * import edu.ufl.cise.cop4020fa23.runtime.ImageOps; public class colors{ public static
 	 * int apply(){ ConsoleIO.writePixel(0xff00ff00);
-	 * ConsoleIO.writePixel(0xff0000ff); ConsoleIO.write(33); return
-	 * (ImageOps.binaryPackedPixelPixelOp(ImageOps.OP.PLUS,0xffff0000,PixelOps.pack(33,33,33)));
+	 * ConsoleIO.writePixel(0xff0000ff);
+	 * ConsoleIO.write(33);
+	 * return (ImageOps.binaryPackedPixelPixelOp(ImageOps.OP.PLUS,0xffff0000,PixelOps.pack(33,33,33)));
 	 * } }
 	 */
 	@Test

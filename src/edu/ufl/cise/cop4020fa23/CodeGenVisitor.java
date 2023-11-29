@@ -344,7 +344,8 @@ public class CodeGenVisitor implements ASTVisitor{
         sb = new StringBuilder();
         sb.append("package edu.ufl.cise.cop4020fa23;\n");
         sb.append("import edu.ufl.cise.cop4020fa23.runtime.ConsoleIO;\n");
-        sb.append("import edu.ufl.cise.cop4020fa23.runtime.ImageOps;");
+        sb.append("import edu.ufl.cise.cop4020fa23.runtime.ImageOps;\n");
+        sb.append("import edu.ufl.cise.cop4020fa23.runtime.PixelOps;\n");
         sb.append("public class ");
         sb.append(program.getName());
         sb.append("{\n");
