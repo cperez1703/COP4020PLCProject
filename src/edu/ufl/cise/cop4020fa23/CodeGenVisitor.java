@@ -94,38 +94,44 @@ public class CodeGenVisitor implements ASTVisitor{
             sb.append(right.visit(this,arg).toString());
             sb.append(")))");
         }else{
-            sb.append("(");
-            sb.append(left.visit(this, arg).toString());
-            sb.append(" ");
-            sb.append(binaryExpr.getOp().text());
-            sb.append(" ");
-            sb.append(right.visit(this, arg).toString());
-            sb.append(")");
-//            if (left.getType() == Type.PIXEL && right.getType() == Type.PIXEL) {
-//
+//            sb.append("(");
+//            sb.append(left.visit(this, arg).toString());
+//            sb.append(" ");
+//            sb.append(binaryExpr.getOp().text());
+//            sb.append(" ");
+//            sb.append(right.visit(this, arg).toString());
+//            sb.append(")");
+            if (left.getType() == Type.PIXEL && right.getType() == Type.PIXEL) {
+                sb.append("(ImageOps.binaryPackedPixelPixelOp(ImageOps.OP.");
+                sb.append(ImageOps.OP.valueOf(op.toString()));
+                sb.append(",");
+                sb.append(left.visit(this,arg).toString());
+                sb.append(",");
+                sb.append(right.visit(this,arg).toString());
+                sb.append("))");
 //                ImageOps.binaryPackedPixelPixelOp(op,left,right);
-//            }
-//            else if (left.getType() == Type.IMAGE || right.getType() == Type.IMAGE) {
+            }
+            else if (left.getType() == Type.IMAGE || right.getType() == Type.IMAGE) {
+
+            }
+            else {
+                sb.append("(");
+                sb.append(left.visit(this, arg).toString());
+                sb.append(" ");
+                sb.append(binaryExpr.getOp().text());
+                sb.append(" ");
+                sb.append(right.visit(this, arg).toString());
+                sb.append(")");
+            }
+        }
+//        if (left.getType() == Type.PIXEL && right.getType() == Type.PIXEL) {
+//            ImageOps.binaryPackedPixelPixelOp(ImageOps.OP.valueOf(op.toString()), PixelOps.pack(PixelOps.SELECT_RED, PixelOps.SELECT_GREEN, PixelOps.SELECT_BLUE), PixelOps.pack(PixelOps.SELECT_RED, PixelOps.SELECT_GREEN, PixelOps.SELECT_BLUE));
 //
-//            }
-//            else {
-//                sb.append("(");
-//                sb.append(left.visit(this, arg).toString());
-//                sb.append(" ");
-//                sb.append(binaryExpr.getOp().text());
-//                sb.append(" ");
-//                sb.append(right.visit(this, arg).toString());
-//                sb.append(")");
-//            }
-        }
-        if (left.getType() == Type.PIXEL && right.getType() == Type.PIXEL) {
-            ImageOps.binaryPackedPixelPixelOp(ImageOps 1,1);
-
-        }
-
-        if (left.getType() == Type.PIXEL && right.getType() == Type.INT) {
-
-        }
+//        }
+//
+//        if (left.getType() == Type.PIXEL && right.getType() == Type.INT) {
+//
+//        }
 
         return sb;
     }
@@ -338,6 +344,7 @@ public class CodeGenVisitor implements ASTVisitor{
         sb = new StringBuilder();
         sb.append("package edu.ufl.cise.cop4020fa23;\n");
         sb.append("import edu.ufl.cise.cop4020fa23.runtime.ConsoleIO;\n");
+        sb.append("import edu.ufl.cise.cop4020fa23.runtime.ImageOps;");
         sb.append("public class ");
         sb.append(program.getName());
         sb.append("{\n");
