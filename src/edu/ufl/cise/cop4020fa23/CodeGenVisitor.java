@@ -2,6 +2,7 @@ package edu.ufl.cise.cop4020fa23;
 
 import edu.ufl.cise.cop4020fa23.ast.*;
 import edu.ufl.cise.cop4020fa23.ast.Dimension;
+import edu.ufl.cise.cop4020fa23.exceptions.CodeGenException;
 import edu.ufl.cise.cop4020fa23.exceptions.PLCCompilerException;
 import edu.ufl.cise.cop4020fa23.runtime.ConsoleIO;
 import edu.ufl.cise.cop4020fa23.runtime.FileURLIO;
@@ -248,6 +249,22 @@ public class CodeGenVisitor implements ASTVisitor{
                 sb.append(declaration.getInitializer().visit(this, arg));
             }
         }
+        else if (declaration.getNameDef().getType() == Type.IMAGE) {
+            if (declaration.getNameDef().getDimension() == null) {
+                throw new CodeGenException("Dimension null");
+            }
+            String width = declaration.getNameDef().getDimension().getWidth().toString();
+            String height = declaration.getNameDef().getDimension().getHeight().toString();
+            int w = Integer.parseInt(width);
+            int h = Integer.parseInt(height);
+            BufferedImage bufferedImage = ImageOps.makeImage(w,h);
+            sb.append("final BufferedImage ");
+            sb.append(declaration.getNameDef().visit(this,arg).toString());
+            sb.append(" = ");
+            sb.append("ImageOps.makeImage(");
+            sb.append(declaration.getNameDef().getDimension().toString());
+            sb.append(")");
+        }
         return sb;
     }
 
@@ -265,7 +282,21 @@ public class CodeGenVisitor implements ASTVisitor{
 
     @Override
     public Object visitDoStatement(DoStatement doStatement, Object arg) throws PLCCompilerException {
-        return null;
+        StringBuilder sb = new StringBuilder();
+        List<GuardedBlock> guardedBlocks = doStatement.getGuardedBlocks();
+        sb.append("boolean bool = false; ");
+        sb.append("while(!bool) {\n");
+        sb.append("bool = true; ");
+        for (int i = 0; i < guardedBlocks.size(); i++) {
+            Expr g = guardedBlocks.get(i).getGuard();
+            Block b = guardedBlocks.get(i).getBlock();
+            sb.append("if");
+            sb.append(g.visit(this,arg).toString());
+            sb.append("{bool = false; {");
+            sb.append(b.visit(this,arg).toString());
+            sb.append("}");
+        }
+        return sb;
     }
 
     @Override
@@ -296,7 +327,24 @@ public class CodeGenVisitor implements ASTVisitor{
 
     @Override
     public Object visitIfStatement(IfStatement ifStatement, Object arg) throws PLCCompilerException {
-        return null;
+        StringBuilder sb = new StringBuilder();
+        List<GuardedBlock> guardedBlocks = ifStatement.getGuardedBlocks();
+        for (int i = 0; i < guardedBlocks.size(); i++) {
+            Expr g = guardedBlocks.get(i).getGuard();
+            Block b = guardedBlocks.get(i).getBlock();
+            if (i == 0) {
+                sb.append("if");
+                sb.append(g.visit(this,arg).toString());
+                sb.append(b.visit(this,arg).toString());
+            }
+            else if (i != 0){
+                sb.append("else if(");
+                sb.append(g.visit(this,arg).toString());
+                sb.append(")");
+                sb.append(b.visit(this,arg).toString());
+            }
+        }
+        return sb;
     }
 
     @Override
@@ -476,15 +524,15 @@ public class CodeGenVisitor implements ASTVisitor{
         StringBuilder sb = new StringBuilder();
         sb.append("ConsoleIO.write(");
         Type exprType = writeStatement.getExpr().getType();
-        // !! CHECK: not sure based off documentation
-//        if (exprType == Type.PIXEL) {
-//            ConsoleIO.writePixel(writeStatement.getExpr().visit(this,arg).);
-//        }
-//        else {
-//            sb.append(writeStatement.getExpr().visit(this, arg));
-//        }
-        sb.append(writeStatement.getExpr().visit(this, arg));
-        sb.append(")");
+        if (exprType == Type.PIXEL) {
+            sb.append("ConsoleIO.writePixel(");
+            sb.append(writeStatement.getExpr().visit(this,arg).toString());
+            sb.append(")");
+        }
+        else {
+            sb.append(writeStatement.getExpr().visit(this, arg).toString());
+            sb.append(")");
+        }
         return sb;
     }
 
