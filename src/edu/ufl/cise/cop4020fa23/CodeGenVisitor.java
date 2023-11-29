@@ -36,41 +36,53 @@ public class CodeGenVisitor implements ASTVisitor{
                 }
             }
 
-        }
-        else if (lvalue.getVarType() == Type.PIXEL && lvalue.getChannelSelector() != null) {
-            //RED
-            if (lvalue.getChannelSelector().color() == Kind.RES_red) {
-                sb.append("PixelOps.setRed(");
-                sb.append(lvalue.visit(this,arg).toString());
-                sb.append(",");
-                sb.append(expr.visit(this,arg).toString());
-                sb.append(")");
-            }
-            //GREEN
-            else if (lvalue.getChannelSelector().color() == Kind.RES_green) {
-                sb.append("PixelOps.setGreen(");
-                sb.append(lvalue.visit(this,arg).toString());
-                sb.append(",");
-                sb.append(expr.visit(this,arg).toString());
-                sb.append(")");
-            }
-            //BLUE
-            else if (assignmentStatement.getlValue().getChannelSelector().color() == Kind.RES_blue) {
-                sb.append("PixelOps.setBlue(");
-                sb.append(lvalue.visit(this,arg).toString());
-                sb.append(",");
-                sb.append(expr.visit(this,arg).toString());
-                sb.append(")");
-            }
+
         }
         //Someone said something in slack about this
         else if (lvalue.getVarType() == Type.PIXEL && lvalue.getChannelSelector() == null && expr.getType() == Type.INT) {
 //            lvalue = PixelOps.pack(expr,expr,expr);
+            sb.append(lvalue.visit(this,arg).toString());
+            sb.append(" = PixelOps.pack(");
+            sb.append(expr.visit(this,arg).toString());
+            sb.append(",");
+            sb.append(expr.visit(this,arg).toString());
+            sb.append(",");
+            sb.append(expr.visit(this,arg).toString());
+            sb.append(")");
+        }
+        else if (lvalue.getVarType() == Type.PIXEL && lvalue.getChannelSelector()!= null) {
+            sb.append(assignmentStatement.getlValue().visit(this,arg).toString());
+            sb.append(expr.visit(this,arg).toString());
+            sb.append(")");
+//            //RED
+//            if (lvalue.getChannelSelector().visit(this,arg).toString().equals("RES_red")) {
+//                sb.append("PixelOps.setRed(");
+//                sb.append(lvalue.visit(this,arg).toString());
+//                sb.append(",");
+//                sb.append(expr.visit(this,arg).toString());
+//                sb.append(")");
+//            }
+//            //GREEN
+//            else if (lvalue.getChannelSelector().color() == Kind.RES_green) {
+//                sb.append("PixelOps.setGreen(");
+//                sb.append(lvalue.visit(this,arg).toString());
+//                sb.append(",");
+//                sb.append(expr.visit(this,arg).toString());
+//                sb.append(")");
+//            }
+//            //BLUE
+//            else if (assignmentStatement.getlValue().getChannelSelector().color() == Kind.RES_blue) {
+//                sb.append("PixelOps.setBlue(");
+//                sb.append(lvalue.visit(this,arg).toString());
+//                sb.append(",");
+//                sb.append(expr.visit(this,arg).toString());
+//                sb.append(")");
+//            }
         }
         else {
             // !! CHECK: Added .toString() to these, not sure if correct
             sb.append(lvalue.visit(this, arg).toString());
-            sb.append("=");
+            sb.append(" = ");
             sb.append(expr.visit(this, arg).toString());
         }
         return sb;
@@ -101,7 +113,10 @@ public class CodeGenVisitor implements ASTVisitor{
 //            sb.append(" ");
 //            sb.append(right.visit(this, arg).toString());
 //            sb.append(")");
-            if (left.getType() == Type.PIXEL && right.getType() == Type.PIXEL) {
+            if (op == Kind.BOOLEAN_LIT) {
+
+            }
+            else if (left.getType() == Type.PIXEL && right.getType() == Type.PIXEL) {
                 sb.append("(ImageOps.binaryPackedPixelPixelOp(ImageOps.OP.");
                 sb.append(ImageOps.OP.valueOf(op.toString()));
                 sb.append(",");
@@ -110,6 +125,9 @@ public class CodeGenVisitor implements ASTVisitor{
                 sb.append(right.visit(this,arg).toString());
                 sb.append("))");
 //                ImageOps.binaryPackedPixelPixelOp(op,left,right);
+            }
+            else if (left.getType() == Type.PIXEL && right.getType() == Type.INT) {
+                sb.append("ImageOps.binaryPackedPixelIntOp(");
             }
             else if (left.getType() == Type.IMAGE || right.getType() == Type.IMAGE) {
 
@@ -159,13 +177,48 @@ public class CodeGenVisitor implements ASTVisitor{
 
     @Override
     public Object visitChannelSelector(ChannelSelector channelSelector, Object arg) throws PLCCompilerException {
-//        if (arg.equals(LValue) {
-//
-//        }
-//        else {
-//
-//        }
-        return null;
+        StringBuilder sb = new StringBuilder();
+        if (arg instanceof Expr) {
+            if (channelSelector.color() == Kind.RES_red) {
+                sb.append("ImageOps.extractRed(");
+                sb.append(channelSelector.visit(this,arg).toString());
+                sb.append(")");
+
+            }
+            //GREEN
+            else if (channelSelector.color() == Kind.RES_green) {
+                sb.append("ImageOps.extractGreen(");
+                sb.append(channelSelector.visit(this,arg).toString());
+                sb.append(")");
+            }
+            //BLUE
+            else if (channelSelector.color() == Kind.RES_blue) {
+                sb.append("ImageOps.extractBlue(");
+                sb.append(channelSelector.visit(this,arg).toString());
+                sb.append(")");
+            }
+        }
+        else if (arg instanceof LValue) {
+            //RED
+            if (channelSelector.color() == Kind.RES_red) {
+                sb.append("PixelOps.setRed(");
+                sb.append(channelSelector.visit(this,arg).toString());
+                sb.append(",");
+            }
+            //GREEN
+            else if (channelSelector.color() == Kind.RES_green) {
+                sb.append("PixelOps.setGreen(");
+                sb.append(channelSelector.visit(this,arg).toString());
+                sb.append(",");
+            }
+            //BLUE
+            else if (channelSelector.color() == Kind.RES_blue) {
+                sb.append("PixelOps.setBlue(");
+                sb.append(channelSelector.visit(this,arg).toString());
+                sb.append(",");
+            }
+        }
+        return sb;
     }
 
     @Override
@@ -187,7 +240,7 @@ public class CodeGenVisitor implements ASTVisitor{
         if (declaration.getNameDef().getType() != Type.IMAGE) {
             sb.append(declaration.getNameDef().visit(this, arg));
             if (declaration.getInitializer() != null) {
-                sb.append("=");
+                sb.append(" = ");
                 sb.append(declaration.getInitializer().visit(this, arg));
             }
         }
@@ -314,25 +367,26 @@ public class CodeGenVisitor implements ASTVisitor{
                 sb.append("))");
             }
             else if (postfixExpr.pixel() == null && postfixExpr.channel() != null) {
-                //RED
-                if (postfixExpr.channel().color() == Kind.RES_red) {
-                    sb.append("ImageOps.extractRed(");
-                    sb.append(postfixExpr.visit(this,arg).toString());
-                    sb.append(")");
-
-                }
-                //GREEN
-                else if (postfixExpr.channel().color() == Kind.RES_green) {
-                    sb.append("ImageOps.extractGreen(");
-                    sb.append(postfixExpr.visit(this,arg).toString());
-                    sb.append(")");
-                }
-                //BLUE
-                else if (postfixExpr.channel().color() == Kind.RES_blue) {
-                    sb.append("ImageOps.extractBlue(");
-                    sb.append(postfixExpr.visit(this,arg).toString());
-                    sb.append(")");
-                }
+                postfixExpr.channel().visit(this,arg);
+//                //RED
+//                if (postfixExpr.channel().color() == Kind.RES_red) {
+//                    sb.append("ImageOps.extractRed(");
+//                    sb.append(postfixExpr.visit(this,arg).toString());
+//                    sb.append(")");
+//
+//                }
+//                //GREEN
+//                else if (postfixExpr.channel().color() == Kind.RES_green) {
+//                    sb.append("ImageOps.extractGreen(");
+//                    sb.append(postfixExpr.visit(this,arg).toString());
+//                    sb.append(")");
+//                }
+//                //BLUE
+//                else if (postfixExpr.channel().color() == Kind.RES_blue) {
+//                    sb.append("ImageOps.extractBlue(");
+//                    sb.append(postfixExpr.visit(this,arg).toString());
+//                    sb.append(")");
+//                }
             }
         }
         return sb;

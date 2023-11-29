@@ -164,7 +164,8 @@ class CodeGenTest_Hw5_starter {
 	 * package edu.ufl.cise.cop4020fa23;
 	 * import edu.ufl.cise.cop4020fa23.runtime.PixelOps;
 	 * import edu.ufl.cise.cop4020fa23.runtime.ConsoleIO;
-	 * import edu.ufl.cise.cop4020fa23.runtime.ImageOps; public class colors{ public static
+	 * import
+	 * edu.ufl.cise.cop4020fa23.runtime.ImageOps; public class colors{ public static
 	 * int apply(){ ConsoleIO.writePixel(0xff00ff00);
 	 * ConsoleIO.writePixel(0xff0000ff);
 	 * ConsoleIO.write(33);
