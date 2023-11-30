@@ -214,7 +214,7 @@ public class TypeCheckVisitor implements ASTVisitor {
         check(st.lookup(identExpr.getName())!=null, identExpr, "Ident Expr doesn't exist");
         identExpr.setNameDef(st.lookup(identExpr.getName()));
         identExpr.setType(identExpr.getNameDef().getType());
-        return identExpr;
+        return identExpr.getType();
     }
 
     @Override
