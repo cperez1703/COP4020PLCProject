@@ -371,7 +371,7 @@ public class CodeGenVisitor implements ASTVisitor{
 
     @Override
     public Object visitGuardedBlock(GuardedBlock guardedBlock, Object arg) throws PLCCompilerException {
-        return null;
+        return null;//
     }
 
     @Override
