@@ -285,7 +285,7 @@ public class CodeGenVisitor implements ASTVisitor{
             if (declaration.getInitializer() != null) {
 //                sb.append(declaration.getInitializer().visit(this, arg));
             }
-            if(declaration.getInitializer().getType() == Type.STRING){
+            if(declaration.getInitializer().getType() == Type.STRING){//
 //                sb.append(declaration.getInitializer().visit(this,arg).toString());
                 if(declaration.getNameDef().getDimension()!=null){
 
