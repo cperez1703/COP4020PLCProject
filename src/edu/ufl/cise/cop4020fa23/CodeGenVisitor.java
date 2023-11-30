@@ -283,15 +283,14 @@ public class CodeGenVisitor implements ASTVisitor{
         else if (declaration.getNameDef().getType() == Type.IMAGE) {
             sb.append(declaration.getNameDef().visit(this, arg));
             if (declaration.getInitializer() != null) {
-                sb.append(" = ");
-                sb.append(declaration.getInitializer().visit(this, arg));
+//                sb.append(declaration.getInitializer().visit(this, arg));
             }
             if(declaration.getInitializer().getType() == Type.STRING){
-                sb.append(declaration.getInitializer().visit(this,arg).toString());
+//                sb.append(declaration.getInitializer().visit(this,arg).toString());
                 if(declaration.getNameDef().getDimension()!=null){
 
                 }else{
-                    sb.append("FileURLIO.readImage(");
+                    sb.append("=FileURLIO.readImage(");
                     sb.append(declaration.getInitializer().visit(this,arg).toString());
                     sb.append(")");
                 }
@@ -499,6 +498,8 @@ public class CodeGenVisitor implements ASTVisitor{
         sb.append("import edu.ufl.cise.cop4020fa23.runtime.ConsoleIO;\n");
         sb.append("import edu.ufl.cise.cop4020fa23.runtime.ImageOps;\n");
         sb.append("import edu.ufl.cise.cop4020fa23.runtime.PixelOps;\n");
+        sb.append("import java.awt.image.BufferedImage;\n");
+        sb.append("import edu.ufl.cise.cop4020fa23.runtime.FileURLIO;\n");
         sb.append("public class ");
         sb.append(program.getName());
         sb.append("{\n");
