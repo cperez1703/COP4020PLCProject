@@ -29,21 +29,16 @@ public class CodeGenVisitor implements ASTVisitor{
         if (lvalue.getVarType() == Type.IMAGE) {
             if (lvalue.getPixelSelector() == null && lvalue.getChannelSelector() == null) {
                 if (expr.getType() == Type.IMAGE) {
-                    sb.append("ImageOps.copyInto(");
-                    sb.append(expr.visit(this,arg));
-                    sb.append(",");
-                    sb.append(lvalue.visit(this,arg));
-                    sb.append(")");
-//                    ImageOps.copyInto(source,lvalue); //need to get bufferedImages as input
+                    String exprString = expr.toString();
+//                    int
+//                    BufferedImage exprImg = ImageOps.makeImage();
+//                    BufferedImage lvalueImg = ImageOps.makeImage();
+//                    ImageOps.copyInto(exprImg, lvalueImg); //need to get bufferedImages as input
                 }
-                else if (lvalue.getType() == Type.PIXEL ) {
+                else if (expr.getType() == Type.PIXEL) {
 //                    ImageOps.setAllPixels();
                 }
-                else if (lvalue.getType() == Type.STRING) {
-                    sb.append(lvalue.visit(this,arg));
-                    sb.append("FileURLIO.readImage(");
-                    sb.append(expr.visit(this,arg));
-                    sb.append(")");
+                else if (expr.getType() == Type.STRING) {
 //                    FileURLIO.readImage();
 //                    ImageOps.copyInto(loadedImage, lvalue);
                 }
@@ -118,7 +113,8 @@ public class CodeGenVisitor implements ASTVisitor{
             sb.append(",");
             sb.append(right.visit(this,arg).toString());
             sb.append(")))");
-        }else{
+        }
+        else{
 //            sb.append("(");
 //            sb.append(left.visit(this, arg).toString());
 //            sb.append(" ");
@@ -126,8 +122,15 @@ public class CodeGenVisitor implements ASTVisitor{
 //            sb.append(" ");
 //            sb.append(right.visit(this, arg).toString());
 //            sb.append(")");
-            if (op == Kind.BOOLEAN_LIT) {
-
+            if (op == Kind.BOOLEAN_LIT && left.getType() == Type.PIXEL && right.getType() == Type.PIXEL) {
+                sb.append("(ImageOps.binaryPackedPixelBooleanOp(ImageOps.OP.");
+                sb.append(ImageOps.OP.valueOf(op.toString()));
+                sb.append(",");
+                sb.append(left.visit(this,arg).toString());
+                sb.append(",");
+                sb.append(right.visit(this,arg).toString());
+                sb.append("))");
+//                ImageOps.binaryPackedPixelBooleanOp(ImageOps.OP.valueOf(op.toString()), ,);
             }
             else if (left.getType() == Type.PIXEL && right.getType() == Type.PIXEL) {
                 sb.append("(ImageOps.binaryPackedPixelPixelOp(ImageOps.OP.");
@@ -137,13 +140,48 @@ public class CodeGenVisitor implements ASTVisitor{
                 sb.append(",");
                 sb.append(right.visit(this,arg).toString());
                 sb.append("))");
-//                ImageOps.binaryPackedPixelPixelOp(op,left,right);
+//                ImageOps.binaryPackedPixelPixelOp(ImageOps.OP.valueOf(op.toString()),left,right);
             }
             else if (left.getType() == Type.PIXEL && right.getType() == Type.INT) {
-                sb.append("ImageOps.binaryPackedPixelIntOp(");
+                sb.append("(ImageOps.binaryPackedPixelIntOp(");
+                sb.append(ImageOps.OP.valueOf(op.toString()));
+                sb.append(",");
+                sb.append(left.visit(this,arg).toString());
+                sb.append(",");
+                sb.append(right.visit(this,arg).toString());
+                sb.append("))");
+//                ImageOps.binaryPackedPixelIntOp(ImageOps.OP.valueOf(op.toString()), , );
             }
             else if (left.getType() == Type.IMAGE || right.getType() == Type.IMAGE) {
-
+                sb.append("(ImageOps.binaryImageImageOp(");
+                sb.append(ImageOps.OP.valueOf(op.toString()));
+                sb.append(",");
+                sb.append(left.visit(this,arg).toString());
+                sb.append(",");
+                sb.append(right.visit(this,arg).toString());
+                sb.append("))");
+//                ImageOps.binaryImageImageOp(ImageOps.OP.valueOf(op.toString()), , );
+            }
+            else if (left.getType() == Type.IMAGE && right.getType() == Type.PIXEL) {
+                sb.append("(ImageOps.binaryImagePixelOp(");
+                sb.append(ImageOps.OP.valueOf(op.toString()));
+                sb.append(",");
+                sb.append(left.visit(this,arg).toString());
+                sb.append(",");
+                sb.append(right.visit(this,arg).toString());
+                sb.append("))");
+                //binaryImagePixelOp (combine an image with a pixel)
+//                ImageOps.binaryImagePixelOp(ImageOps.OP.valueOf(op.toString()), , );
+            }
+            else if (left.getType() == Type.IMAGE && right.getType() == Type.INT) {
+                sb.append("(ImageOps.binaryImageScalarOp(");
+                sb.append(ImageOps.OP.valueOf(op.toString()));
+                sb.append(",");
+                sb.append(left.visit(this,arg).toString());
+                sb.append(",");
+                sb.append(right.visit(this,arg).toString());
+                sb.append("))");
+//                ImageOps.binaryImageScalarOp(ImageOps.OP.valueOf(op.toString()), ,);
             }
             else {
                 sb.append("(");
@@ -175,9 +213,8 @@ public class CodeGenVisitor implements ASTVisitor{
         sb.append("{\n");
         for(int i = 0; i < elems.size();i++){
             Block.BlockElem elem = elems.get(i);
-            sb.append(elem.visit(this,arg));
-            sb.append(";");
-            sb.append("\n");
+            sb.append(elem.visit(this,arg).toString());
+            sb.append(";\n");
         }
         sb.append("}\n");
         return (arg != null ? sb.toString() : null);
@@ -191,48 +228,6 @@ public class CodeGenVisitor implements ASTVisitor{
     @Override
     public Object visitChannelSelector(ChannelSelector channelSelector, Object arg) throws PLCCompilerException {
         return channelSelector.color();
-//        StringBuilder sb = new StringBuilder();
-//        if (arg instanceof Expr) {
-//            if (channelSelector.color() == Kind.RES_red) {
-//                sb.append("ImageOps.extractRed(");
-//                sb.append(channelSelector.visit(this,arg).toString());
-//                sb.append(")");
-//
-//            }
-//            //GREEN
-//            else if (channelSelector.color() == Kind.RES_green) {
-//                sb.append("ImageOps.extractGreen(");
-//                sb.append(channelSelector.visit(this,arg).toString());
-//                sb.append(")");
-//            }
-//            //BLUE
-//            else if (channelSelector.color() == Kind.RES_blue) {
-//                sb.append("ImageOps.extractBlue(");
-//                sb.append(channelSelector.visit(this,arg).toString());
-//                sb.append(")");
-//            }
-//        }
-//        else if (arg instanceof LValue) {
-//            //RED
-//            if (channelSelector.color() == Kind.RES_red) {
-//                sb.append("PixelOps.setRed(");
-//                sb.append(channelSelector.visit(this,arg).toString());
-//                sb.append(",");
-//            }
-//            //GREEN
-//            else if (channelSelector.color() == Kind.RES_green) {
-//                sb.append("PixelOps.setGreen(");
-//                sb.append(channelSelector.visit(this,arg).toString());
-//                sb.append(",");
-//            }
-//            //BLUE
-//            else if (channelSelector.color() == Kind.RES_blue) {
-//                sb.append("PixelOps.setBlue(");
-//                sb.append(channelSelector.visit(this,arg).toString());
-//                sb.append(",");
-//            }
-//        }
-//        return sb;
     }
 
     @Override
@@ -251,29 +246,7 @@ public class CodeGenVisitor implements ASTVisitor{
     @Override
     public Object visitDeclaration(Declaration declaration, Object arg) throws PLCCompilerException {
         StringBuilder sb = new StringBuilder();
-        Expr expr = declaration.getInitializer();
-        if(expr==null){
-            if(declaration.getNameDef().getType()!=Type.IMAGE){
-                sb.append(declaration.getNameDef().visit(this,arg));
-            }else if (declaration.getNameDef().getType()==Type.IMAGE) {
-                if (declaration.getNameDef().getDimension() == null) {
-                    System.out.println(declaration.getNameDef());
-                    throw new CodeGenException("Dimension null");
-                }
-                String width = declaration.getNameDef().getDimension().getWidth().toString();
-                String height = declaration.getNameDef().getDimension().getHeight().toString();
-                int w = Integer.parseInt(width);
-                int h = Integer.parseInt(height);
-                BufferedImage bufferedImage = ImageOps.makeImage(w, h);
-                sb.append("final BufferedImage ");
-                sb.append(declaration.getNameDef().visit(this, arg).toString());
-                sb.append(" = ");
-                sb.append("ImageOps.makeImage(");
-                sb.append(declaration.getNameDef().getDimension().toString());
-                sb.append(")");
-            }
-        }
-        else if (declaration.getNameDef().getType() != Type.IMAGE) {
+        if (declaration.getNameDef().getType() != Type.IMAGE) {
             sb.append(declaration.getNameDef().visit(this, arg));
             if (declaration.getInitializer() != null) {
                 sb.append(" = ");
@@ -281,22 +254,20 @@ public class CodeGenVisitor implements ASTVisitor{
             }
         }
         else if (declaration.getNameDef().getType() == Type.IMAGE) {
-            if(declaration.getInitializer().getType() == Type.STRING){
-                sb.append(declaration.getInitializer().visit(this,arg).toString());
-                if(declaration.getNameDef().getDimension()!=null){
-
-                }else{
-                    sb.append("FileURLIO.readImage(");
-                    sb.append(declaration.getInitializer().visit(this,arg).toString());
-                    sb.append(")");
-                }
+            if (declaration.getNameDef().getDimension() == null) {
+                throw new CodeGenException("Dimension null");
             }
-            else if(declaration.getInitializer().getType()==Type.IMAGE&&declaration.getNameDef()==null){
-                sb.append(declaration.getInitializer().visit(this,arg).toString());
-            }
-            else if(declaration.getInitializer().getType()==Type.IMAGE&&declaration.getNameDef()!=null){
-                sb.append(declaration.getInitializer().visit(this,arg).toString());
-            }
+            String width = declaration.getNameDef().getDimension().getWidth().toString();
+            String height = declaration.getNameDef().getDimension().getHeight().toString();
+            int w = Integer.parseInt(width);
+            int h = Integer.parseInt(height);
+            BufferedImage bufferedImage = ImageOps.makeImage(w,h);
+            sb.append("final BufferedImage ");
+            sb.append(declaration.getNameDef().visit(this,arg).toString());
+            sb.append(" = ");
+            sb.append("ImageOps.makeImage(");
+            sb.append(declaration.getNameDef().getDimension().toString());
+            sb.append(")");
         }
         return sb;
     }
@@ -317,24 +288,20 @@ public class CodeGenVisitor implements ASTVisitor{
     public Object visitDoStatement(DoStatement doStatement, Object arg) throws PLCCompilerException {
         StringBuilder sb = new StringBuilder();
         List<GuardedBlock> guardedBlocks = doStatement.getGuardedBlocks();
-        sb.append("do{\n");
-        sb.append("if(");
-        for(int i = 0; i < guardedBlocks.size();i++){
-            if(i>0)sb.append("else if(");
-            sb.append(guardedBlocks.get(i).getGuard().visit(this,arg));
-            sb.append("){\n");
-            sb.append(guardedBlocks.get(i).getBlock().visit(this,arg));
-            sb.append("}\n");
+        sb.append("while{");
+        for (int i = 0; i < guardedBlocks.size(); i++) {
+            Expr guard = guardedBlocks.get(i).getGuard();
+            Block block = guardedBlocks.get(i).getBlock();
+            if (i == 0) {
+                sb.append("if(");
+            }
+            else {
+                sb.append("else if(");
+            }
+            sb.append(guard.visit(this,arg));
+
         }
-        sb.append("}");
-        sb.append("while(");
-        for(int i = 0; i < guardedBlocks.size();i++){
-            if(i>0)sb.append("||");
-            sb.append("(");
-            sb.append(guardedBlocks.get(i).getGuard().visit(this,arg));
-            sb.append(")");
-        }
-        sb.append(")\n");
+
         return sb;
     }
 
@@ -372,24 +339,33 @@ public class CodeGenVisitor implements ASTVisitor{
             Expr g = guardedBlocks.get(i).getGuard();
             Block b = guardedBlocks.get(i).getBlock();
             if (i == 0) {
-                sb.append("if");
-                sb.append(g.visit(this,arg).toString());
-                sb.append(b.visit(this,arg).toString());
+                sb.append("if(");
             }
             else if (i != 0){
                 sb.append("else if(");
-                sb.append(g.visit(this,arg).toString());
-                sb.append(")");
-                sb.append(b.visit(this,arg).toString());
             }
+            sb.append(g.visit(this,arg).toString());
+            sb.append(") {\n");
+            sb.append(b.visit(this,arg).toString());
+            sb.append("}\n");
         }
         return sb;
     }
 
     @Override
     public Object visitLValue(LValue lValue, Object arg) throws PLCCompilerException {
-        return new StringBuilder(lValue.getNameDef().getJavaName());//change
+//        StringBuilder sb = new StringBuilder();
+//        sb.append(lValue.getNameDef().getJavaName());
+//        if (lValue.getPixelSelector() != null) {
+//            sb.append(lValue.getPixelSelector().visit(this,arg).toString());
+//        }
+//        if (lValue.getChannelSelector() != null) {
+//            sb.append(lValue.getChannelSelector().visit(this,arg).toString());
+//        }
+        return new StringBuilder(lValue.getNameDef().getJavaName());
+//        return sb;
     }
+
 
     @Override
     public Object visitNameDef(NameDef nameDef, Object arg) throws PLCCompilerException {
@@ -404,6 +380,11 @@ public class CodeGenVisitor implements ASTVisitor{
         else if (type.equals("boolean")) type="Boolean";
         sb.append(type);
         sb.append(" ");
+        if (nameDef.getDimension() != null) {
+            nameDef.getDimension().visit(this,arg);
+//            nameDef.getDimension().getWidth().visit(this,arg);
+//            nameDef.getDimension().getHeight().visit(this,arg);
+        }
         sb.append(nameDef.getName());//need to change to account for multiples(n is number)
         sb.append("$");
         sb.append(n);
@@ -494,6 +475,8 @@ public class CodeGenVisitor implements ASTVisitor{
         sb.append("import edu.ufl.cise.cop4020fa23.runtime.ConsoleIO;\n");
         sb.append("import edu.ufl.cise.cop4020fa23.runtime.ImageOps;\n");
         sb.append("import edu.ufl.cise.cop4020fa23.runtime.PixelOps;\n");
+        sb.append("import java.awt.image.BufferedImage\n;");
+        sb.append("import edu.ufl.cise.cop4020fa23.runtime.FileURLIO;\n");
         sb.append("public class ");
         sb.append(program.getName());
         sb.append("{\n");
@@ -514,7 +497,7 @@ public class CodeGenVisitor implements ASTVisitor{
             if(i<params.size()-1)sb.append(", ");
         }
         sb.append(")\n");
-        sb.append(visitBlock(program.getBlock(), arg));
+        sb.append(visitBlock(program.getBlock(), arg).toString());
         sb.append("}\n");
         return (arg != null ? sb.toString() : null);
     }
