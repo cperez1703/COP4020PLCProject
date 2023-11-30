@@ -314,20 +314,27 @@ public class CodeGenVisitor implements ASTVisitor{
 //                sb.append(declaration.getInitializer().visit(this, arg));
             }
             if(declaration.getInitializer().getType() == Type.STRING){//
-//                sb.append(declaration.getInitializer().visit(this,arg).toString());
                 if(declaration.getNameDef().getDimension()!=null){
-
+                    //code
                 }else{
                     sb.append("=FileURLIO.readImage(");
                     sb.append(declaration.getInitializer().visit(this,arg).toString());
                     sb.append(")");
                 }
             }
-            else if(declaration.getInitializer().getType()==Type.IMAGE&&declaration.getNameDef()==null){
+            else if(declaration.getInitializer().getType()==Type.IMAGE&&declaration.getNameDef().getDimension()==null){
+                sb.append("=ImageOps.cloneImage(");
                 sb.append(declaration.getInitializer().visit(this,arg).toString());
+                sb.append(")");
             }
-            else if(declaration.getInitializer().getType()==Type.IMAGE&&declaration.getNameDef()!=null){
+            else if(declaration.getInitializer().getType()==Type.IMAGE&&declaration.getNameDef().getDimension()!=null){
+                sb.append("=ImageOps.copyAndResize(");
                 sb.append(declaration.getInitializer().visit(this,arg).toString());
+                sb.append(",");
+                sb.append(declaration.getNameDef().getDimension().getWidth().visit(this,arg));
+                sb.append(",");
+                sb.append(declaration.getNameDef().getDimension().getHeight().visit(this,arg));
+                sb.append(")");
             }
         }
         return sb;
