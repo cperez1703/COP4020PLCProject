@@ -152,7 +152,7 @@ public class CodeGenVisitor implements ASTVisitor{
 //                ImageOps.binaryPackedPixelIntOp(ImageOps.OP.valueOf(op.toString()),left,right);
             }
             else if (left.getType() == Type.IMAGE && right.getType() == Type.IMAGE) {
-                sb.append("(ImageOps.binaryPackedImageImageOp(ImageOps.OP.");
+                sb.append("(ImageOps.binaryImageImageOp(ImageOps.OP.");
                 sb.append(ImageOps.OP.valueOf(op.toString()));
                 sb.append(",");
                 sb.append(left.visit(this,arg).toString());
@@ -162,7 +162,7 @@ public class CodeGenVisitor implements ASTVisitor{
 //                ImageOps.binaryImageImageOp(ImageOps.OP.valueOf(op.toString()),left,right);
             }
             else if (left.getType() == Type.IMAGE && right.getType() == Type.PIXEL) {
-                sb.append("(ImageOps.binaryPackedImagePixelOp(ImageOps.OP.");
+                sb.append("(ImageOps.binaryImagePixelOp(ImageOps.OP.");
                 sb.append(ImageOps.OP.valueOf(op.toString()));
                 sb.append(",");
                 sb.append(left.visit(this,arg).toString());
