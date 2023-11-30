@@ -281,6 +281,11 @@ public class CodeGenVisitor implements ASTVisitor{
             }
         }
         else if (declaration.getNameDef().getType() == Type.IMAGE) {
+            sb.append(declaration.getNameDef().visit(this, arg));
+            if (declaration.getInitializer() != null) {
+                sb.append(" = ");
+                sb.append(declaration.getInitializer().visit(this, arg));
+            }
             if(declaration.getInitializer().getType() == Type.STRING){
                 sb.append(declaration.getInitializer().visit(this,arg).toString());
                 if(declaration.getNameDef().getDimension()!=null){
