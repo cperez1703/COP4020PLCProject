@@ -162,6 +162,7 @@ public class CodeGenVisitor implements ASTVisitor{
                 sb.append("))");
 //                ImageOps.binaryImageImageOp(ImageOps.OP.valueOf(op.toString()), , );
             }
+            //blah
             else if (left.getType() == Type.IMAGE && right.getType() == Type.PIXEL) {
                 sb.append("(ImageOps.binaryImagePixelOp(");
                 sb.append(ImageOps.OP.valueOf(op.toString()));
