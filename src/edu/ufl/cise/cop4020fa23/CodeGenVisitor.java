@@ -310,12 +310,16 @@ public class CodeGenVisitor implements ASTVisitor{
         }
         else if (declaration.getNameDef().getType() == Type.IMAGE) {
             sb.append(declaration.getNameDef().visit(this, arg));
-            if (declaration.getInitializer() != null) {
-//                sb.append(declaration.getInitializer().visit(this, arg));
-            }
             if(declaration.getInitializer().getType() == Type.STRING){//
                 if(declaration.getNameDef().getDimension()!=null){
                     //code
+                    sb.append("=FileURLIO.readImage(");
+                    sb.append(declaration.getInitializer().visit(this,arg).toString());
+                    sb.append(",");
+                    sb.append(declaration.getNameDef().getDimension().getWidth().visit(this,arg));
+                    sb.append(",");
+                    sb.append(declaration.getNameDef().getDimension().getHeight().visit(this,arg));
+                    sb.append(")");
                 }else{
                     sb.append("=FileURLIO.readImage(");
                     sb.append(declaration.getInitializer().visit(this,arg).toString());
@@ -395,7 +399,7 @@ public class CodeGenVisitor implements ASTVisitor{
 
     @Override
     public Object visitGuardedBlock(GuardedBlock guardedBlock, Object arg) throws PLCCompilerException {
-        return null;
+        return null;//
     }
 
     @Override
