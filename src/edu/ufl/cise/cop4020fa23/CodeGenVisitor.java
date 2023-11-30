@@ -118,15 +118,17 @@ public class CodeGenVisitor implements ASTVisitor{
             sb.append(",");
             sb.append(right.visit(this,arg).toString());
             sb.append(")))");
-        }else{
-//            sb.append("(");
-//            sb.append(left.visit(this, arg).toString());
-//            sb.append(" ");
-//            sb.append(binaryExpr.getOp().text());
-//            sb.append(" ");
-//            sb.append(right.visit(this, arg).toString());
-//            sb.append(")");
-            if (op == Kind.BOOLEAN_LIT) {
+        }
+        else{
+            if (op == Kind.BOOLEAN_LIT && left.getType() == Type.PIXEL && right.getType() == Type.PIXEL) {
+                sb.append("(ImageOps.binaryPackedPixelBooleanOp(ImageOps.OP.");
+                sb.append(ImageOps.OP.valueOf(op.toString()));
+                sb.append(",");
+                sb.append(left.visit(this,arg).toString());
+                sb.append(",");
+                sb.append(right.visit(this,arg).toString());
+                sb.append("))");
+//                ImageOps.binaryPackedPixelBooleanOp(ImageOps.OP.valueOf(op.toString()),left,right);
 
             }
             else if (left.getType() == Type.PIXEL && right.getType() == Type.PIXEL) {
@@ -137,12 +139,47 @@ public class CodeGenVisitor implements ASTVisitor{
                 sb.append(",");
                 sb.append(right.visit(this,arg).toString());
                 sb.append("))");
-//                ImageOps.binaryPackedPixelPixelOp(op,left,right);
+//                ImageOps.binaryPackedPixelPixelOp(ImageOps.OP.valueOf(op.toString()),left,right);
             }
             else if (left.getType() == Type.PIXEL && right.getType() == Type.INT) {
-                sb.append("ImageOps.binaryPackedPixelIntOp(");
+                sb.append("(ImageOps.binaryPackedPixelIntOp(ImageOps.OP.");
+                sb.append(ImageOps.OP.valueOf(op.toString()));
+                sb.append(",");
+                sb.append(left.visit(this,arg).toString());
+                sb.append(",");
+                sb.append(right.visit(this,arg).toString());
+                sb.append("))");
+//                ImageOps.binaryPackedPixelIntOp(ImageOps.OP.valueOf(op.toString()),left,right);
             }
-            else if (left.getType() == Type.IMAGE || right.getType() == Type.IMAGE) {
+            else if (left.getType() == Type.IMAGE && right.getType() == Type.IMAGE) {
+                sb.append("(ImageOps.binaryPackedImageImageOp(ImageOps.OP.");
+                sb.append(ImageOps.OP.valueOf(op.toString()));
+                sb.append(",");
+                sb.append(left.visit(this,arg).toString());
+                sb.append(",");
+                sb.append(right.visit(this,arg).toString());
+                sb.append("))");
+//                ImageOps.binaryImageImageOp(ImageOps.OP.valueOf(op.toString()),left,right);
+            }
+            else if (left.getType() == Type.IMAGE && right.getType() == Type.PIXEL) {
+                sb.append("(ImageOps.binaryPackedImagePixelOp(ImageOps.OP.");
+                sb.append(ImageOps.OP.valueOf(op.toString()));
+                sb.append(",");
+                sb.append(left.visit(this,arg).toString());
+                sb.append(",");
+                sb.append(right.visit(this,arg).toString());
+                sb.append("))");
+//                ImageOps.binaryImagePixelOp(ImageOps.OP.valueOf(op.toString()),left,right);
+            }
+            else if (left.getType() == Type.IMAGE && right.getType() == Type.INT) {
+                sb.append("(ImageOps.binaryPackedImageScalarOp(ImageOps.OP.");
+                sb.append(ImageOps.OP.valueOf(op.toString()));
+                sb.append(",");
+                sb.append(left.visit(this,arg).toString());
+                sb.append(",");
+                sb.append(right.visit(this,arg).toString());
+                sb.append("))");
+//                ImageOps.binaryImageScalarOp(ImageOps.OP.valueOf(op.toString()),left,right);
 
             }
             else {
@@ -155,15 +192,6 @@ public class CodeGenVisitor implements ASTVisitor{
                 sb.append(")");
             }
         }
-//        if (left.getType() == Type.PIXEL && right.getType() == Type.PIXEL) {
-//            ImageOps.binaryPackedPixelPixelOp(ImageOps.OP.valueOf(op.toString()), PixelOps.pack(PixelOps.SELECT_RED, PixelOps.SELECT_GREEN, PixelOps.SELECT_BLUE), PixelOps.pack(PixelOps.SELECT_RED, PixelOps.SELECT_GREEN, PixelOps.SELECT_BLUE));
-//
-//        }
-//
-//        if (left.getType() == Type.PIXEL && right.getType() == Type.INT) {
-//
-//        }
-
         return sb;
     }
 
