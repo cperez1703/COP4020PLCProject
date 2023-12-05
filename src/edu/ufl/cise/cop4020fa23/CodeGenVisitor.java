@@ -27,6 +27,7 @@ public class CodeGenVisitor implements ASTVisitor{
         Expr expr = assignmentStatement.getE();
         // !! IP (???)
         if (lvalue.getVarType() == Type.IMAGE) {
+
             if (lvalue.getPixelSelector() == null && lvalue.getChannelSelector() == null) {
                 if (expr.getType() == Type.IMAGE) {
                     sb.append("ImageOps.copyInto(");
@@ -36,10 +37,12 @@ public class CodeGenVisitor implements ASTVisitor{
                     sb.append(")");
 //                    ImageOps.copyInto(source,lvalue); //need to get bufferedImages as input
                 }
-                else if (lvalue.getType() == Type.PIXEL ) {
-//                    ImageOps.setAllPixels();
+                else if (expr.getType() == Type.PIXEL) {
+                    sb.append("ImageOps.setAllPixels(");
+                    sb.append(expr.visit(this,arg));
+                    sb.append(")");
                 }
-                else if (lvalue.getType() == Type.STRING) {
+                else if (expr.getType() == Type.STRING) {
                     sb.append(lvalue.visit(this,arg));
                     sb.append("FileURLIO.readImage(");
                     sb.append(expr.visit(this,arg));
@@ -65,35 +68,24 @@ public class CodeGenVisitor implements ASTVisitor{
         }
         else if (lvalue.getVarType() == Type.PIXEL && lvalue.getChannelSelector()!= null) {
             sb.append(assignmentStatement.getlValue().visit(this,arg).toString());
+            sb.append(" = ");
+            sb.append("PixelOps.");
+            if (lvalue.getChannelSelector().color() == RES_red) {
+                sb.append("setRed");
+            }
+            else if (lvalue.getChannelSelector().color() == RES_green) {
+                sb.append("setGreen");
+            }
+            else if (lvalue.getChannelSelector().color() == RES_blue) {
+                sb.append("setBlue");
+            }
+            sb.append("(");
+            sb.append(assignmentStatement.getlValue().visit(this,arg).toString());
+            sb.append(",");
             sb.append(expr.visit(this,arg).toString());
             sb.append(")");
-//            //RED
-//            if (lvalue.getChannelSelector().visit(this,arg).toString().equals("RES_red")) {
-//                sb.append("PixelOps.setRed(");
-//                sb.append(lvalue.visit(this,arg).toString());
-//                sb.append(",");
-//                sb.append(expr.visit(this,arg).toString());
-//                sb.append(")");
-//            }
-//            //GREEN
-//            else if (lvalue.getChannelSelector().color() == Kind.RES_green) {
-//                sb.append("PixelOps.setGreen(");
-//                sb.append(lvalue.visit(this,arg).toString());
-//                sb.append(",");
-//                sb.append(expr.visit(this,arg).toString());
-//                sb.append(")");
-//            }
-//            //BLUE
-//            else if (assignmentStatement.getlValue().getChannelSelector().color() == Kind.RES_blue) {
-//                sb.append("PixelOps.setBlue(");
-//                sb.append(lvalue.visit(this,arg).toString());
-//                sb.append(",");
-//                sb.append(expr.visit(this,arg).toString());
-//                sb.append(")");
-//            }
         }
         else {
-            // !! CHECK: Added .toString() to these, not sure if correct
             sb.append(lvalue.visit(this, arg).toString());
             sb.append(" = ");
             sb.append(expr.visit(this, arg).toString());
@@ -219,48 +211,6 @@ public class CodeGenVisitor implements ASTVisitor{
     @Override
     public Object visitChannelSelector(ChannelSelector channelSelector, Object arg) throws PLCCompilerException {
         return channelSelector.color();
-//        StringBuilder sb = new StringBuilder();
-//        if (arg instanceof Expr) {
-//            if (channelSelector.color() == Kind.RES_red) {
-//                sb.append("ImageOps.extractRed(");
-//                sb.append(channelSelector.visit(this,arg).toString());
-//                sb.append(")");
-//
-//            }
-//            //GREEN
-//            else if (channelSelector.color() == Kind.RES_green) {
-//                sb.append("ImageOps.extractGreen(");
-//                sb.append(channelSelector.visit(this,arg).toString());
-//                sb.append(")");
-//            }
-//            //BLUE
-//            else if (channelSelector.color() == Kind.RES_blue) {
-//                sb.append("ImageOps.extractBlue(");
-//                sb.append(channelSelector.visit(this,arg).toString());
-//                sb.append(")");
-//            }
-//        }
-//        else if (arg instanceof LValue) {
-//            //RED
-//            if (channelSelector.color() == Kind.RES_red) {
-//                sb.append("PixelOps.setRed(");
-//                sb.append(channelSelector.visit(this,arg).toString());
-//                sb.append(",");
-//            }
-//            //GREEN
-//            else if (channelSelector.color() == Kind.RES_green) {
-//                sb.append("PixelOps.setGreen(");
-//                sb.append(channelSelector.visit(this,arg).toString());
-//                sb.append(",");
-//            }
-//            //BLUE
-//            else if (channelSelector.color() == Kind.RES_blue) {
-//                sb.append("PixelOps.setBlue(");
-//                sb.append(channelSelector.visit(this,arg).toString());
-//                sb.append(",");
-//            }
-//        }
-//        return sb;
     }
 
     @Override
@@ -283,21 +233,19 @@ public class CodeGenVisitor implements ASTVisitor{
         if(expr==null){
             if(declaration.getNameDef().getType()!=Type.IMAGE){
                 sb.append(declaration.getNameDef().visit(this,arg));
-            }else if (declaration.getNameDef().getType()==Type.IMAGE) {
+            }
+            else if (declaration.getNameDef().getType()==Type.IMAGE) {
                 if (declaration.getNameDef().getDimension() == null) {
                     System.out.println(declaration.getNameDef());
                     throw new CodeGenException("Dimension null");
                 }
-                String width = declaration.getNameDef().getDimension().getWidth().toString();
-                String height = declaration.getNameDef().getDimension().getHeight().toString();
-                int w = Integer.parseInt(width);
-                int h = Integer.parseInt(height);
-                BufferedImage bufferedImage = ImageOps.makeImage(w, h);
-                sb.append("final BufferedImage ");
+                Expr width = (Expr) declaration.getNameDef().getDimension().getWidth().visit(this,arg);
+                Expr height = (Expr) declaration.getNameDef().getDimension().getHeight().visit(this,arg);
+//                BufferedImage bufferedImage = new BufferedImage();
                 sb.append(declaration.getNameDef().visit(this, arg).toString());
                 sb.append(" = ");
-                sb.append("ImageOps.makeImage(");
-                sb.append(declaration.getNameDef().getDimension().toString());
+                sb.append("ImageOps.makeImage(");;
+//                sb.append();
                 sb.append(")");
             }
         }
@@ -440,7 +388,7 @@ public class CodeGenVisitor implements ASTVisitor{
         sb = new StringBuilder();
         String type = nameDef.getType().toString().toLowerCase();
         if(type.equals("string"))type="String";
-        else if (type.equals("image"))type="BufferedImage"; //this down to boolean are questionable, unsure if this is where to implement
+        else if (type.equals("image"))type="final BufferedImage"; //this down to boolean are questionable, unsure if this is where to implement
         else if(type.equals("pixel"))type="int";
         else if (type.equals("int"))type="int";
         else if (type.equals("void"))type="void";

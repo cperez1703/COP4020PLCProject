@@ -214,7 +214,8 @@ public class TypeCheckVisitor implements ASTVisitor {
         check(st.lookup(identExpr.getName())!=null, identExpr, "Ident Expr doesn't exist");
         identExpr.setNameDef(st.lookup(identExpr.getName()));
         identExpr.setType(identExpr.getNameDef().getType());
-        return identExpr.getType();
+        Type type = identExpr.getType();
+        return type;
     }
 
     @Override
@@ -234,12 +235,17 @@ public class TypeCheckVisitor implements ASTVisitor {
         Type inferLValueType = null;
         if(lValue.getPixelSelector()!=null){
             lValue.getPixelSelector().visit(this,true);
+//            check(lValue.getVarType() == Type.IMAGE, lValue,"lvalue not image when pixelselector not null");
             varType = Type.IMAGE;
         }
         if(lValue.getChannelSelector()!=null){
-            lValue.getChannelSelector().visit(this,arg);
-            if(varType==Type.IMAGE || varType==Type.PIXEL){
-                varType = lValue.getVarType();
+//            lValue.getChannelSelector().visit(this,arg);
+//            check(lValue.getVarType() == Type.PIXEL || lValue.getVarType()==Type.IMAGE, lValue, "invalid lvalue when channel selector not null");
+            if(varType==Type.IMAGE){
+                varType = Type.IMAGE;
+            }
+            else if (varType == Type.PIXEL) {
+                varType = Type.PIXEL;
             }else{
                 throw new TypeCheckException("Invalid LValue");
             }
@@ -269,7 +275,7 @@ public class TypeCheckVisitor implements ASTVisitor {
         check(inferLValueType != null, lValue, "inferLValue not defined");
         lValue.setType(inferLValueType);
         lValue.setNameDef(lvalNameDef);
-        return lValue;
+        return inferLValueType;
     }
 
     @Override
@@ -277,7 +283,6 @@ public class TypeCheckVisitor implements ASTVisitor {
         Type type = null;
         Type nameDefType = nameDef.getType();
         Dimension nameDefDimension = nameDef.getDimension();
-        String nameDefName = nameDef.getName();
         check(nameDefType != Type.VOID, nameDef, "Invalid namedef definition");
         if (nameDefDimension != null) {
             nameDefDimension.visit(this, arg);
@@ -321,7 +326,7 @@ public class TypeCheckVisitor implements ASTVisitor {
         yExpr.setType(yType);
         check(xType == Type.INT, pixelSelector, "Pixel X not an int");
         check(yType == Type.INT, pixelSelector, "Pixel Y not an int");
-        return null;
+        return pixelSelector;
     }
 
     @Override
