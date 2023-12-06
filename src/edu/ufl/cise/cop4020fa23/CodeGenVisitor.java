@@ -27,7 +27,6 @@ public class CodeGenVisitor implements ASTVisitor{
         Expr expr = assignmentStatement.getE();
         // !! IP (???)
         if (lvalue.getVarType() == Type.IMAGE) {
-
             if (lvalue.getPixelSelector() == null && lvalue.getChannelSelector() == null) {
                 if (expr.getType() == Type.IMAGE) {
                     sb.append("ImageOps.copyInto(");
@@ -51,8 +50,55 @@ public class CodeGenVisitor implements ASTVisitor{
 //                    ImageOps.copyInto(loadedImage, lvalue);
                 }
             }
-
-
+            else if (lvalue.getChannelSelector() != null) {
+                throw new UnsupportedOperationException("Channel selector not null");
+            }
+            else if (lvalue.getPixelSelector() != null && lvalue.getChannelSelector() == null) {
+                PixelSelector pixelSelector = lvalue.getPixelSelector();
+                IdentExpr identExprX = (IdentExpr) pixelSelector.xExpr();
+                IdentExpr identExprY = (IdentExpr) pixelSelector.yExpr();
+                //JAVANAMES for SND x and y
+                NameDef xND = identExprX.getNameDef();
+                StringBuilder xjavaName = new StringBuilder();
+                xjavaName.append(xND.getName());
+                xjavaName.append("$");
+                xjavaName.append(n);
+                xND.setJavaName(xjavaName.toString());
+                NameDef yND = identExprY.getNameDef();
+                StringBuilder yjavaName = new StringBuilder();
+                yjavaName.append(yND.getName());
+                yjavaName.append("$");
+                yjavaName.append(n);
+                yND.setJavaName(yjavaName.toString());
+                //FOR LOOP
+                sb.append("for(int ");
+                sb.append(xjavaName);
+                sb.append( "=0; ");
+                sb.append(xjavaName);
+                sb.append("<");
+                sb.append(lvalue.getNameDef().getJavaName());
+                sb.append(".getWidth();");
+                sb.append(xjavaName);
+                sb.append("++){\n");
+                sb.append("for(int ");
+                sb.append(yjavaName);
+                sb.append( "=0; ");
+                sb.append(yjavaName);
+                sb.append("<");
+                sb.append(lvalue.getNameDef().getJavaName());
+                sb.append(".getHeight();");
+                sb.append(yjavaName);
+                sb.append("++){\n");
+                sb.append("ImageOps.setRGB(");
+                sb.append(lvalue.getNameDef().getJavaName());
+                sb.append(", ");
+                sb.append(xjavaName);
+                sb.append(", ");
+                sb.append(yjavaName);
+                sb.append(",");
+                sb.append(expr.visit(this,arg).toString());
+                sb.append("); } }");
+            }
         }
         //Someone said something in slack about this
         else if (lvalue.getVarType() == Type.PIXEL && lvalue.getChannelSelector() == null && expr.getType() == Type.INT) {
@@ -229,23 +275,23 @@ public class CodeGenVisitor implements ASTVisitor{
     @Override
     public Object visitDeclaration(Declaration declaration, Object arg) throws PLCCompilerException {
         StringBuilder sb = new StringBuilder();
+        NameDef namedef = declaration.getNameDef();
         Expr expr = declaration.getInitializer();
         if(expr==null){
-            if(declaration.getNameDef().getType()!=Type.IMAGE){
+            if(namedef.getType()!=Type.IMAGE){
                 sb.append(declaration.getNameDef().visit(this,arg));
             }
-            else if (declaration.getNameDef().getType()==Type.IMAGE) {
-                if (declaration.getNameDef().getDimension() == null) {
-                    System.out.println(declaration.getNameDef());
-                    throw new CodeGenException("Dimension null");
+            else if (namedef.getType()==Type.IMAGE) {
+                Dimension dimension = namedef.getDimension();
+                if (dimension == null) {
+                    throw new CodeGenException("Dimension shouldnt be null but is");
                 }
-                Expr width = (Expr) declaration.getNameDef().getDimension().getWidth().visit(this,arg);
-                Expr height = (Expr) declaration.getNameDef().getDimension().getHeight().visit(this,arg);
-//                BufferedImage bufferedImage = new BufferedImage();
                 sb.append(declaration.getNameDef().visit(this, arg).toString());
                 sb.append(" = ");
                 sb.append("ImageOps.makeImage(");;
-//                sb.append();
+                sb.append(dimension.getWidth().visit(this,arg));
+                sb.append(",");
+                sb.append(dimension.getHeight().visit(this,arg));
                 sb.append(")");
             }
         }
