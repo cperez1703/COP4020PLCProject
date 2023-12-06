@@ -38,13 +38,17 @@ public class CodeGenVisitor implements ASTVisitor{
                 }
                 else if (expr.getType() == Type.PIXEL) {
                     sb.append("ImageOps.setAllPixels(");
+                    sb.append(lvalue.visit(this,arg));
+                    sb.append(",");
                     sb.append(expr.visit(this,arg));
                     sb.append(")");
                 }
                 else if (expr.getType() == Type.STRING) {
-                    sb.append(lvalue.visit(this,arg));
+                    sb.append("ImageOps.copyInto(");
                     sb.append("FileURLIO.readImage(");
                     sb.append(expr.visit(this,arg));
+                    sb.append("),");
+                    sb.append(lvalue.visit(this,arg));
                     sb.append(")");
 //                    FileURLIO.readImage();
 //                    ImageOps.copyInto(loadedImage, lvalue);
@@ -158,9 +162,9 @@ public class CodeGenVisitor implements ASTVisitor{
             sb.append(")))");
         }
         else{
-            if (op == Kind.BOOLEAN_LIT && left.getType() == Type.PIXEL && right.getType() == Type.PIXEL) {
-                sb.append("(ImageOps.binaryPackedPixelBooleanOp(ImageOps.OP.");
-                sb.append(ImageOps.OP.valueOf(op.toString()));
+            if (op == EQ && left.getType() == Type.PIXEL && right.getType() == Type.PIXEL) {
+                sb.append("(ImageOps.binaryPackedPixelBooleanOp(ImageOps.BoolOP.");
+                sb.append("EQUALS");
                 sb.append(",");
                 sb.append(left.visit(this,arg).toString());
                 sb.append(",");
@@ -286,6 +290,7 @@ public class CodeGenVisitor implements ASTVisitor{
                 if (dimension == null) {
                     throw new CodeGenException("Dimension shouldnt be null but is");
                 }
+                sb.append("final ");
                 sb.append(declaration.getNameDef().visit(this, arg).toString());
                 sb.append(" = ");
                 sb.append("ImageOps.makeImage(");;
@@ -434,7 +439,7 @@ public class CodeGenVisitor implements ASTVisitor{
         sb = new StringBuilder();
         String type = nameDef.getType().toString().toLowerCase();
         if(type.equals("string"))type="String";
-        else if (type.equals("image"))type="final BufferedImage"; //this down to boolean are questionable, unsure if this is where to implement
+        else if (type.equals("image"))type="BufferedImage"; //this down to boolean are questionable, unsure if this is where to implement
         else if(type.equals("pixel"))type="int";
         else if (type.equals("int"))type="int";
         else if (type.equals("void"))type="void";
@@ -483,6 +488,10 @@ public class CodeGenVisitor implements ASTVisitor{
         }
         else if (postfixExpr.primary().getType() == Type.IMAGE) {
             if (postfixExpr.pixel() != null && postfixExpr.channel() == null) {
+                sb.append("PixelOps.");
+                if(postfixExpr.channel().visit(this,arg)==RES_red)sb.append("red");
+                else if(postfixExpr.channel().visit(this,arg)==RES_green)sb.append("green");
+                else if(postfixExpr.channel().visit(this,arg)==RES_blue)sb.append("blue");
                 sb.append("ImageOps.getRGB(");
                 sb.append(postfixExpr.primary().visit(this,arg).toString());
                 sb.append(",");
@@ -490,7 +499,10 @@ public class CodeGenVisitor implements ASTVisitor{
                 sb.append(")");
             }
             else if (postfixExpr.pixel() != null && postfixExpr.channel() != null) {
-                sb.append(postfixExpr.channel().visit(this,arg));
+                sb.append("PixelOps.");
+                if(postfixExpr.channel().visit(this,arg)==RES_red)sb.append("red");
+                else if(postfixExpr.channel().visit(this,arg)==RES_green)sb.append("green");
+                else if(postfixExpr.channel().visit(this,arg)==RES_blue)sb.append("blue");
                 sb.append("(ImageOps.getRGB(");
                 sb.append(postfixExpr.primary().visit(this,arg).toString());
                 sb.append(",");
