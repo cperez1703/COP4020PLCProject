@@ -501,6 +501,28 @@ class CodeGenTest_Hw5_starter {
 		compareImages(expected, result);
 	}
 
+	/** TEST 18
+	 package edu.ufl.cise.cop4020fa23;
+	 import java.awt.image.BufferedImage;
+	 import edu.ufl.cise.cop4020fa23.runtime.ImageOps;
+	 public class makeImage{
+	 public static BufferedImage apply(int w$1, int h$1){
+	 final BufferedImage im$2=ImageOps.makeImage(w$1,h$1);
+	 for (int x$3=0; x$3<im$2.getWidth();x$3++){
+	 for (int y$3=0; y$3<im$2.getHeight();y$3++){
+	 ImageOps.setRGB(im$2,x$3,y$3,(y$3>(h$1/2)?0xff0000ff:0xff00ff00));
+	 }
+	 };
+	 final BufferedImage imRotate$2=ImageOps.makeImage(h$1,w$1);
+	 for (int x$4=0; x$4<imRotate$2.getWidth();x$4++){
+	 for (int y$4=0; y$4<imRotate$2.getHeight();y$4++){
+	 ImageOps.setRGB(imRotate$2,x$4,y$4,ImageOps.getRGB(im$2,y$4,x$4));
+	 }
+	 };
+	 return imRotate$2;
+	 }
+	 }
+	 */
 	@Test
 	void hw5_18() throws Exception {
 		BufferedImage result = (BufferedImage) PLCLangExec.runCode(packageName, """
@@ -523,28 +545,19 @@ class CodeGenTest_Hw5_starter {
 		show(result);
 		compareImages(expected, result);
 	}
-
-	/**
-	 package edu.ufl.cise.cop4020fa23;
-	 import java.awt.image.BufferedImage;
-	 import edu.ufl.cise.cop4020fa23.runtime.ImageOps;
-	 public class makeImage{
-	 public static BufferedImage apply(int w$1, int h$1){
-	 final BufferedImage im$2=ImageOps.makeImage(w$1,h$1);
-	 for (int x$3=0; x$3<im$2.getWidth();x$3++){
-	 for (int y$3=0; y$3<im$2.getHeight();y$3++){
-	 ImageOps.setRGB(im$2,x$3,y$3,(y$3>(h$1/2)?0xff0000ff:0xff00ff00));
-	 }
-	 };
-	 final BufferedImage imRotate$2=ImageOps.makeImage(h$1,w$1);
-	 for (int x$4=0; x$4<imRotate$2.getWidth();x$4++){
-	 for (int y$4=0; y$4<imRotate$2.getHeight();y$4++){
-	 ImageOps.setRGB(imRotate$2,x$4,y$4,ImageOps.getRGB(im$2,y$4,x$4));
-	 }
-	 };
-	 return imRotate$2;
-	 }
-	 }
+	/** TEST 19
+	 * public class addImages{ public static BufferedImage apply(int w$1, int h$1){
+	 * final BufferedImage im0$2=ImageOps.makeImage(w$1,h$1); final BufferedImage
+	 * im1$2=ImageOps.makeImage(w$1,h$1); for (int x$3=0;
+	 * x$3<im0$2.getWidth();x$3++){ for (int y$3=0; y$3<im0$2.getHeight();y$3++){
+	 * ImageOps.setRGB(im0$2,x$3,y$3,(y$3>(h$1/2)?0xff0000ff:0xff00ff00)); } }; for
+	 * (int x$4=0; x$4<im1$2.getWidth();x$4++){ for (int y$4=0;
+	 * y$4<im1$2.getHeight();y$4++){
+	 * ImageOps.setRGB(im1$2,x$4,y$4,(y$4>(h$1/2)?0xffff0000:0xff404040)); } };
+	 * BufferedImage
+	 * im2$2=ImageOps.cloneImage((ImageOps.binaryImageImageOp(ImageOps.OP.PLUS,im0$2,im1$2)));
+	 * ; return im2$2; } }
+	 *
 	 */
 	@Test
 	void hw5_19() throws Exception {
@@ -575,7 +588,7 @@ class CodeGenTest_Hw5_starter {
 		show(result);
 	}
 
-	/**
+	/** TEST 20
 	 * package edu.ufl.cise.cop4020fa23; import java.awt.image.BufferedImage; import
 	 * edu.ufl.cise.cop4020fa23.runtime.ConsoleIO; import
 	 * edu.ufl.cise.cop4020fa23.runtime.ImageOps; import
