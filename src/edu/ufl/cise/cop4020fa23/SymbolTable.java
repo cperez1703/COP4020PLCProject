@@ -61,29 +61,17 @@ public class SymbolTable {
             while(!check.isEmpty()){
                 num = check.peek();
                 while(cur.entry!=null) {
-                    if(Objects.equals(name, "a")){
-                        System.out.print(num);
-                        System.out.println(cur.scope);
-                    }
                     if (Objects.equals(cur.scope, num)) {
                         return cur.nameDef;
                     } else {
                         cur = cur.entry;
                     }
                 }
-                if(Objects.equals(name, "a")){
-                    System.out.print(num);
-                    System.out.println(cur.scope);
-                }
                 if(Objects.equals(cur.scope, num)){
                     return cur.nameDef;
                 }
                 check.pop();
                 cur = symbolTable.get(name);
-            }
-            if(Objects.equals(name, "a")){
-                System.out.print(num);
-                System.out.println(cur.scope);
             }
             if(Objects.equals(cur.scope, num)){
                 return cur.nameDef;
